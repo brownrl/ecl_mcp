@@ -16,6 +16,7 @@ import * as Search from './src/search/index.js';
 import * as Validation from './src/validation/index.js';
 import * as Generator from './src/generator/index.js';
 import * as Relationships from './src/relationships/index.js';
+import * as Utils from './src/utils/index.js';
 import { performHealthCheck } from './src/utils/health-check.js';
 import { globalCache, startCleanupJob } from './src/utils/cache.js';
 import { globalTracker } from './src/utils/performance.js';
@@ -757,6 +758,59 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             },
           },
           required: ['components'],
+        },
+      },
+
+      // ===== PAGE UTILITIES (Phase 10) =====
+      {
+        name: 'ecl_get_page_requirements',
+        description: 'Get complete ECL page requirements and boilerplate code. Returns DOCTYPE, html structure, CSS/JS links with CDN URLs, font requirements, icon sprite setup, and initialization scripts. Critical for starting new ECL projects.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            preset: {
+              type: 'string',
+              enum: ['ec', 'eu'],
+              description: 'ECL preset: "ec" (European Commission) or "eu" (European Union). Default: "ec"',
+            },
+            include_reset: {
+              type: 'boolean',
+              description: 'Include ECL reset/normalize CSS (default: true)',
+            },
+            include_optional: {
+              type: 'boolean',
+              description: 'Include optional ECL utilities like print styles (default: false)',
+            },
+            components: {
+              type: 'array',
+              items: {
+                type: 'string'
+              },
+              description: 'Components you plan to use (determines JavaScript requirements)',
+            },
+            cdn_version: {
+              type: 'string',
+              description: 'ECL version to use (default: "4.11.1")',
+            },
+          },
+        },
+      },
+      {
+        name: 'ecl_get_cdn_resources',
+        description: 'Get all ECL CDN resource URLs for offline development. Returns download URLs for CSS, JavaScript, icons, logos, and fonts. Useful for local hosting or offline development.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            preset: {
+              type: 'string',
+              enum: ['ec', 'eu'],
+              description: 'ECL preset: "ec" or "eu". Default: "ec"',
+            },
+            version: {
+              type: 'string',
+              description: 'ECL version (default: "4.11.1")',
+            },
+          },
         },
       },
 
@@ -1824,6 +1878,40 @@ For manual initialization details, check individual component documentation.
                 version: '2.0'
               }
             }, null, 2),
+          },
+        ],
+      };
+    }
+
+    // Page Utilities (Phase 10)
+    if (name === 'ecl_get_page_requirements') {
+      const result = Utils.getPageRequirements({
+        preset: args.preset,
+        include_reset: args.include_reset,
+        include_optional: args.include_optional,
+        components: args.components,
+        cdn_version: args.cdn_version
+      });
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
+      };
+    }
+
+    if (name === 'ecl_get_cdn_resources') {
+      const result = Utils.getCDNResources(
+        args.preset,
+        args.version
+      );
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2),
           },
         ],
       };
