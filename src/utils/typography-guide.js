@@ -15,7 +15,7 @@ const TYPOGRAPHY_SYSTEM = {
             fallback: 'sans-serif',
             usage: 'Primary font for all body text and UI elements',
             css: 'font-family: Arial, sans-serif;',
-            note: 'ECL reset.css does NOT set a base font-family. You must set this explicitly.'
+            note: 'ECL uses a utility-first approach. Apply typography utilities to elements directly.'
         },
         monospace: {
             name: 'Courier New',
@@ -153,23 +153,31 @@ export function getTypographyGuide() {
             system: TYPOGRAPHY_SYSTEM,
             critical_notes: [
                 {
-                    type: 'error',
-                    message: 'ECL reset.css does NOT include base font-family declaration',
-                    solution: 'Add this to your CSS: html { font-family: Arial, sans-serif !important; }',
-                    impact: 'Without this fix, browsers will use their default fonts (often Times New Roman)',
-                    priority: 'CRITICAL'
+                    type: 'important',
+                    message: 'ECL uses a UTILITY-FIRST approach for typography',
+                    solution: 'Apply ECL typography utility classes directly to your HTML elements',
+                    example: '<p class="ecl-u-type-paragraph">Your text</p>',
+                    priority: 'CRITICAL',
+                    avoid: 'Do NOT use inline styles or global CSS resets on the html tag'
                 },
                 {
                     type: 'warning',
-                    message: 'No font-family utility classes available in ECL',
-                    solution: 'Set font-family at the HTML level or create custom utility classes',
-                    impact: 'Cannot change fonts using ECL utilities alone'
+                    message: 'Paragraph tags without ECL classes will use browser defaults',
+                    solution: 'Always use ecl-u-type-paragraph or ecl-u-type-paragraph-lead classes on <p> tags',
+                    correct_example: '<p class="ecl-u-type-paragraph">Text with Arial font</p>',
+                    incorrect_example: '<p>Text with Times New Roman (browser default)</p>',
+                    impact: 'Unclassed paragraphs will appear in Times New Roman or other browser defaults'
                 },
                 {
                     type: 'info',
-                    message: 'no-js class affects typography rendering',
-                    solution: 'Include the no-js to has-js JavaScript snippet in your <head>',
-                    impact: 'Some typography features may not work without JavaScript'
+                    message: 'ECL provides comprehensive typography utilities',
+                    available_utilities: [
+                        'ecl-u-type-paragraph (standard body text)',
+                        'ecl-u-type-paragraph-lead (larger intro text)',
+                        'ecl-u-type-heading-1 through ecl-u-type-heading-6',
+                        'ecl-u-type-bold, ecl-u-type-medium (font weights)',
+                        'ecl-u-type-color-* (text colors)'
+                    ]
                 }
             ],
             semantic_html_vs_utilities: {
@@ -210,8 +218,10 @@ export function getTypographyGuide() {
             troubleshooting: [
                 {
                     problem: 'Text appears in Times New Roman or serif font',
-                    cause: 'Missing base font-family declaration',
-                    solution: 'Add html { font-family: Arial, sans-serif !important; } to your CSS or use the ecl_get_page_requirements tool which includes this fix automatically'
+                    cause: 'Missing ECL typography utility class on the element',
+                    solution: 'Add the appropriate ECL utility class: <p class="ecl-u-type-paragraph">Your text</p>',
+                    explanation: 'ECL uses a utility-first approach. Each element needs its own typography class.',
+                    avoid: 'Do NOT add inline styles to the html tag. This is not the ECL way.'
                 },
                 {
                     problem: 'Heading sizes not working',
@@ -230,14 +240,15 @@ export function getTypographyGuide() {
                 }
             ],
             best_practices: [
-                'Always set html { font-family: Arial, sans-serif; } at the root level',
-                'Use semantic HTML (h1-h6, p, strong, em) with ECL utility classes',
-                'Apply ecl-u-type-* classes to semantic elements, not divs',
-                'Use ecl-u-type-paragraph-lead for introductory paragraphs',
-                'Maintain heading hierarchy (h1 → h2 → h3, no skipping)',
+                'ALWAYS apply ECL typography utility classes to text elements (utility-first approach)',
+                'Use ecl-u-type-paragraph for all standard paragraph text',
+                'Use ecl-u-type-paragraph-lead for introductory/lead paragraphs',
+                'Apply ecl-u-type-heading-* classes to heading elements (h1-h6)',
+                'Combine semantic HTML with ECL utility classes: <h1 class="ecl-u-type-heading-1">',
+                'Maintain heading hierarchy (h1 → h2 → h3, no skipping levels)',
                 'Use ecl-u-type-bold for emphasis, not just visual styling',
-                'Test typography in multiple browsers to ensure consistency',
-                'Include the no-js to has-js script for proper rendering'
+                'Never use inline styles or global CSS resets - use ECL utilities instead',
+                'Test typography in multiple browsers to ensure consistency'
             ],
             accessibility_notes: [
                 'Use proper heading hierarchy for screen readers',
