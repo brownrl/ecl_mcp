@@ -21,6 +21,13 @@
     <link rel="stylesheet" href="https://cdn1.fpfis.tech.ec.europa.eu/ecl/v4.11.1/ec/styles/optional/ecl-reset.css" media="screen">
     <link rel="stylesheet" href="https://cdn1.fpfis.tech.ec.europa.eu/ecl/v4.11.1/ec/styles/ecl-ec.css" media="screen">
     <link rel="stylesheet" href="https://cdn1.fpfis.tech.ec.europa.eu/ecl/v4.11.1/ec/styles/ecl-ec-print.css" media="print">
+    
+    <!-- CRITICAL FIX: ECL reset.css does NOT set base font-family -->
+    <style>
+        html {
+            font-family: Arial, sans-serif !important;
+        }
+    </style>
 </head>
 <body>
     <div class="ecl-container">

@@ -176,6 +176,13 @@ function generateTestHtml(variant = 'complete') {
     <link rel="stylesheet" href="${cdnBase}/styles/optional/ecl-reset.css" media="screen">
     <link rel="stylesheet" href="${cdnBase}/styles/ecl-ec.css" media="screen">
     <link rel="stylesheet" href="${cdnBase}/styles/ecl-ec-print.css" media="print">
+    
+    <!-- CRITICAL FIX: ECL reset.css does NOT set base font-family -->
+    <style>
+        html {
+            font-family: Arial, sans-serif !important;
+        }
+    </style>
 </head>
 <body>
     <div class="ecl-container">
@@ -265,6 +272,11 @@ function validateHtmlStructure(html) {
       name: 'Includes Pikaday dependency',
       test: () => html.includes('pikaday'),
       critical: false
+    },
+    {
+      name: 'Has font-family fix',
+      test: () => html.includes('font-family') && html.includes('Arial'),
+      critical: true
     }
   ];
   
