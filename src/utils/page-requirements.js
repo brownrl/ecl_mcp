@@ -64,6 +64,15 @@ export function getPageRequirements(options = {}) {
         });
     }
 
+    // CRITICAL: Add utilities CSS for typography classes
+    stylesheets.push({
+        name: `ECL ${preset.toUpperCase()} Utilities`,
+        url: `${cdnBase}/styles/optional/ecl-${preset}-utilities.css`,
+        media: 'screen',
+        required: true,
+        description: 'ECL utility classes including typography (ecl-u-type-*) - REQUIRED for fonts to work'
+    });
+
     if (include_optional) {
         stylesheets.push({
             name: 'ECL Print Styles',

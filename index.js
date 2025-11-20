@@ -1348,11 +1348,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       // Add critical typography guidance
-      code += `\n\n<!-- IMPORTANT: ECL uses utility-class-first approach for typography.
-Always use ECL utility classes on text elements:
-- Headings: ecl-u-type-heading-1 through ecl-u-type-heading-6
-- Paragraphs: ecl-u-type-paragraph
-Without these classes, text will render in browser default font.
+      code += `\n\n<!-- CRITICAL REQUIREMENTS FOR TYPOGRAPHY:
+1. Include CSS: <link rel="stylesheet" href="/styles/optional/ecl-{preset}-utilities.css">
+2. Use utility classes on ALL text elements:
+   - Headings: ecl-u-type-heading-1 through ecl-u-type-heading-6
+   - Paragraphs: ecl-u-type-paragraph
+3. Without the utilities CSS file, typography classes will NOT work!
 See: https://ec.europa.eu/component-library/eu/utilities/typography/usage/ -->`;
 
       return {

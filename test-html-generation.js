@@ -175,6 +175,7 @@ function generateTestHtml(variant = 'complete') {
     <!-- ECL CSS Resources -->
     <link rel="stylesheet" href="${cdnBase}/styles/optional/ecl-reset.css" media="screen">
     <link rel="stylesheet" href="${cdnBase}/styles/ecl-ec.css" media="screen">
+    <link rel="stylesheet" href="${cdnBase}/styles/optional/ecl-ec-utilities.css" media="screen">
     <link rel="stylesheet" href="${cdnBase}/styles/ecl-ec-print.css" media="print">
 </head>
 <body>
