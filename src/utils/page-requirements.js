@@ -4,6 +4,8 @@
  * Provides complete boilerplate code needed for valid ECL pages
  */
 
+import { getAllResources, getCdnBase, getIconSpriteUrl } from './asset-library.js';
+
 /**
  * Get ECL page requirements and boilerplate
  * @param {Object} options - Page options
@@ -40,14 +42,14 @@ export function getPageRequirements(options = {}) {
         );
     });
 
-    // Build CDN URLs - Using official European Commission CDN
-    // Note: jsdelivr does not have version 4.11.1 (website-only release)
-    const cdnBase = `https://cdn1.fpfis.tech.ec.europa.eu/ecl/v${cdn_version}/${preset}`;
+    // Get resources from asset library
+    const resources = getAllResources(preset);
+    const cdnBase = getCdnBase(preset);
 
     const stylesheets = [
         {
             name: `ECL ${preset.toUpperCase()} Main Styles`,
-            url: `${cdnBase}/styles/ecl-${preset}.css`,
+            url: resources.styles.main,
             media: 'screen',
             required: true,
             description: 'Core ECL styles including all components'
@@ -57,7 +59,7 @@ export function getPageRequirements(options = {}) {
     if (include_reset) {
         stylesheets.unshift({
             name: `ECL ${preset.toUpperCase()} Reset/Normalize`,
-            url: `${cdnBase}/styles/optional/ecl-reset.css`,
+            url: resources.styles.reset,
             media: 'screen',
             required: false,
             description: 'CSS reset based on normalize.css - recommended for new projects'
@@ -67,7 +69,7 @@ export function getPageRequirements(options = {}) {
     // CRITICAL: Add utilities CSS for typography classes
     stylesheets.push({
         name: `ECL ${preset.toUpperCase()} Utilities`,
-        url: `${cdnBase}/styles/optional/ecl-${preset}-utilities.css`,
+        url: resources.styles.utilities,
         media: 'screen',
         required: true,
         description: 'ECL utility classes including typography (ecl-u-type-*) - REQUIRED for fonts to work'
@@ -76,7 +78,7 @@ export function getPageRequirements(options = {}) {
     if (include_optional) {
         stylesheets.push({
             name: 'ECL Print Styles',
-            url: `${cdnBase}/styles/ecl-${preset}-print.css`,
+            url: resources.styles.print,
             media: 'print',
             required: false,
             description: 'Optimized styles for printing'
@@ -88,7 +90,7 @@ export function getPageRequirements(options = {}) {
     if (needsJS) {
         scripts.push({
             name: `ECL ${preset.toUpperCase()} JavaScript`,
-            url: `${cdnBase}/scripts/ecl-${preset}.js`,
+            url: resources.scripts.main,
             required: true,
             defer: true,
             description: 'ECL component JavaScript for interactive elements',
@@ -116,7 +118,7 @@ export function getPageRequirements(options = {}) {
 
     // Icon sprite requirements
     const iconRequirements = {
-        sprite_url: `${cdnBase}/dist/images/icons/sprites/icons.svg`,
+        sprite_url: resources.images.icons_sprite,
         cors_note: 'Icons must be hosted on same domain or with CORS headers',
         usage_pattern: '<svg class="ecl-icon ecl-icon--m"><use xlink:href="/path/to/icons.svg#icon-name"></use></svg>',
         recommendation: 'Download sprite and host locally for production',
@@ -155,7 +157,7 @@ export function getPageRequirements(options = {}) {
         metadata: {
             tool: 'ecl_get_page_requirements',
             execution_time_ms: Date.now() - startTime,
-            version: '2.0'
+            version: '2.1'
         }
     };
 }
@@ -251,30 +253,14 @@ ${componentClasses.map(cls => `// const ${cls.toLowerCase()}Element = document.q
  * @returns {Object} Download URLs for all resources
  */
 export function getCDNResources(preset = 'ec', version = '4.11.1') {
-    const base = `https://cdn1.fpfis.tech.ec.europa.eu/ecl/v${version}/${preset}`;
+    const resources = getAllResources(preset);
 
     return {
         success: true,
         data: {
             preset: preset.toUpperCase(),
             version,
-            resources: {
-                styles: {
-                    main: `${base}/styles/ecl-${preset}.css`,
-                    print: `${base}/styles/ecl-${preset}-print.css`,
-                    reset: `${base}/styles/optional/ecl-reset.css`
-                },
-                scripts: {
-                    main: `${base}/scripts/ecl-${preset}.js`
-                },
-                images: {
-                    icons_sprite: `${base}/images/icons/sprites/icons.svg`,
-                    logo_sprite: `${base}/images/logo/sprites/logo.svg`
-                },
-                fonts: {
-                    note: 'ECL uses system fonts (Arial, sans-serif) - no web fonts needed'
-                }
-            },
+            resources: resources,
             download_instructions: [
                 '1. Download resources from URLs above',
                 '2. Place in your project structure:',
@@ -288,3 +274,4 @@ export function getCDNResources(preset = 'ec', version = '4.11.1') {
         }
     };
 }
+

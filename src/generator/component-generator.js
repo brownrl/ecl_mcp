@@ -5,6 +5,7 @@
  */
 
 import * as cheerio from 'cheerio';
+import { getLogoHtml, getLogoUrl } from '../utils/asset-library.js';
 
 /**
  * Generate component with customization
@@ -147,8 +148,9 @@ function applyCustomization(template, component, customization, includeComments)
 
   const { variant, size, color, content, attributes } = customization;
 
-  // Find main component element
-  const selector = `.ecl-${component}`;
+  // Normalize component name for class selector
+  const normalizedComponent = component.toLowerCase().replace(/\s+/g, '-');
+  const selector = `.ecl-${normalizedComponent}`;
   const $component = $(selector).first();
 
   if ($component.length === 0) {
@@ -188,6 +190,9 @@ function applyCustomization(template, component, customization, includeComments)
     applyContentCustomization($, $component, component, content);
   }
 
+  // Fix asset paths (logos, icons)
+  fixAssetPaths($, component);
+
   // Add accessibility attributes if missing
   enhanceAccessibility($, $component, component);
 
@@ -201,6 +206,54 @@ function applyCustomization(template, component, customization, includeComments)
     js: js,
     css: null // CSS is handled by ECL stylesheets
   };
+}
+
+/**
+ * Fix asset paths in component
+ * @param {CheerioAPI} $ - Cheerio instance
+ * @param {string} component - Component name
+ */
+function fixAssetPaths($, component) {
+  const comp = component.toLowerCase().replace(/\s+/g, '-');
+
+  // Fix Site Header Logo
+  if (comp.includes('site-header') || comp.includes('header')) {
+    const $logoLink = $('.ecl-site-header__logo-link');
+
+    if ($logoLink.length > 0) {
+      const logoHtml = getLogoHtml({
+        preset: 'ec',
+        variant: 'positive',
+        language: 'en',
+        className: 'ecl-site-header__logo-image'
+      });
+      $logoLink.html(logoHtml);
+    }
+  }
+
+  // Fix Site Footer Logo
+  if (comp.includes('site-footer') || comp.includes('footer')) {
+    const $logoLink = $('.ecl-site-footer__logo-link');
+
+    if ($logoLink.length > 0) {
+      const logoHtml = getLogoHtml({
+        preset: 'ec',
+        variant: 'negative',
+        language: 'en',
+        className: 'ecl-site-footer__logo-image'
+      });
+      $logoLink.html(logoHtml);
+    }
+  }
+
+  // Fix Icons (generic)
+  $('use').each((i, el) => {
+    const href = $(el).attr('xlink:href');
+    if (href && !href.startsWith('http') && !href.startsWith('/')) {
+      const iconName = href.split('#')[1] || href;
+      $(el).attr('xlink:href', `/images/icons/sprites/icons.svg#${iconName}`);
+    }
+  });
 }
 
 /**
@@ -272,7 +325,7 @@ function applyContentCustomization($, $component, component, content) {
 function addIcon($, $component, iconName, position) {
   const iconHtml = `
     <svg class="ecl-icon ecl-icon--xs ecl-button__icon" focusable="false" aria-hidden="true">
-      <use xlink:href="/icons.svg#${iconName}"></use>
+      <use xlink:href="/images/icons/sprites/icons.svg#${iconName}"></use>
     </svg>
   `;
 

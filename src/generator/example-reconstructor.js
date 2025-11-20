@@ -5,6 +5,7 @@
  */
 
 import * as cheerio from 'cheerio';
+import { getAllResources } from '../utils/asset-library.js';
 
 /**
  * Get complete example with all dependencies
@@ -160,12 +161,13 @@ function extractDependencies(html) {
   const stylesheets = [];
   const scripts = [];
   const $ = cheerio.load(html);
+  const resources = getAllResources('ec'); // Default to EC preset
 
   // Check for ECL stylesheet references
   if (html.includes('ecl-ec.css') || html.includes('ecl-')) {
     stylesheets.push({
       name: 'ECL EC Styles',
-      cdn_url: 'https://cdn.jsdelivr.net/npm/@ecl/preset-ec@latest/dist/styles/ecl-ec.css',
+      cdn_url: resources.styles.main,
       npm_package: '@ecl/preset-ec',
       required: true
     });
@@ -175,7 +177,7 @@ function extractDependencies(html) {
   if (html.includes('ecl-ec.js') || html.includes('ECL.')) {
     scripts.push({
       name: 'ECL EC Scripts',
-      cdn_url: 'https://cdn.jsdelivr.net/npm/@ecl/preset-ec@latest/dist/scripts/ecl-ec.js',
+      cdn_url: resources.scripts.main,
       npm_package: '@ecl/preset-ec',
       required: true
     });
@@ -208,6 +210,8 @@ function extractDependencies(html) {
  * @returns {Object} Complete code
  */
 function buildCompleteExample({ html, js, css, component, dependencies }) {
+  const resources = getAllResources('ec'); // Default to EC preset
+
   // Build complete HTML page
   const completeHtml = `<!doctype html>
 <html lang="en" class="no-js">
@@ -217,8 +221,19 @@ function buildCompleteExample({ html, js, css, component, dependencies }) {
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   
   <!-- ECL EC Styles -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@ecl/preset-ec@latest/dist/styles/ecl-ec.css" />
+  <link rel="stylesheet" href="${resources.styles.main}" />
+  <link rel="stylesheet" href="${resources.styles.utilities}" />
   ${css ? `\n  <style>\n${css}\n  </style>` : ''}
+  
+  <!-- Font fix -->
+  <style>
+    html { font-family: Arial, sans-serif !important; }
+  </style>
+  
+  <script>
+    document.documentElement.classList.remove('no-js');
+    document.documentElement.classList.add('has-js');
+  </script>
 </head>
 <body>
   <!-- Component Example -->
@@ -227,8 +242,13 @@ function buildCompleteExample({ html, js, css, component, dependencies }) {
   </div>
   
   <!-- ECL EC Scripts -->
-  <script src="https://cdn.jsdelivr.net/npm/@ecl/preset-ec@latest/dist/scripts/ecl-ec.js"></script>
+  <script src="${resources.scripts.main}"></script>
   ${js ? `\n  <script>\n${js}\n  </script>` : ''}
+  <script>
+    if (typeof ECL !== 'undefined') {
+      ECL.autoInit();
+    }
+  </script>
 </body>
 </html>`;
 
