@@ -253,11 +253,14 @@ npm install -g git+https://github.com/brownrl/eco_mcp.git
 
 **New configuration** (recommended):
 ```json
+**MCP client configuration**:
+```json
 {
   "mcpServers": {
     "ecl": {
       "command": "npx",
-      "args": ["ecl-mcp"]
+      "args": ["ecl-mcp"],
+      "type": "stdio"
     }
   }
 }

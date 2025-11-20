@@ -260,7 +260,8 @@ npm install -g git+https://github.com/brownrl/eco_mcp.git
   "mcpServers": {
     "ecl": {
       "command": "npx",
-      "args": ["ecl-mcp"]
+      "args": ["ecl-mcp"],
+      "type": "stdio"
     }
   }
 }

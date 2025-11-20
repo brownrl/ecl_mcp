@@ -97,7 +97,8 @@ Add to your Claude Desktop configuration file:
   "mcpServers": {
     "ecl": {
       "command": "npx",
-      "args": ["ecl-mcp"]
+      "args": ["ecl-mcp"],
+      "type": "stdio"
     }
   }
 }
@@ -112,7 +113,8 @@ Add to your VS Code settings (`.vscode/settings.json` or User Settings):
   "cline.mcpServers": {
     "ecl": {
       "command": "npx",
-      "args": ["ecl-mcp"]
+      "args": ["ecl-mcp"],
+      "type": "stdio"
     }
   }
 }

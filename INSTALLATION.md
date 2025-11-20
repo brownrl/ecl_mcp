@@ -87,7 +87,8 @@ The configuration file location depends on your operating system:
   "mcpServers": {
     "ecl": {
       "command": "npx",
-      "args": ["ecl-mcp"]
+      "args": ["ecl-mcp"],
+      "type": "stdio"
     }
   }
 }
@@ -100,7 +101,8 @@ If you installed globally, you can also use:
   "mcpServers": {
     "ecl": {
       "command": "ecl-mcp",
-      "args": []
+      "args": [],
+      "type": "stdio"
     }
   }
 }
@@ -116,11 +118,13 @@ If you already have other MCP servers configured:
 {
   "mcpServers": {
     "existing-server": {
-      "command": "some-other-server"
+      "command": "some-other-server",
+      "type": "stdio"
     },
     "ecl": {
       "command": "npx",
-      "args": ["ecl-mcp"]
+      "args": ["ecl-mcp"],
+      "type": "stdio"
     }
   }
 }
@@ -147,7 +151,8 @@ Cline is a VS Code extension that brings AI assistance directly into your editor
   "cline.mcpServers": {
     "ecl": {
       "command": "npx",
-      "args": ["ecl-mcp"]
+      "args": ["ecl-mcp"],
+      "type": "stdio"
     }
   }
 }
@@ -194,7 +199,8 @@ Or edit the Cursor configuration file directly:
   "mcpServers": {
     "ecl": {
       "command": "npx",
-      "args": ["ecl-mcp"]
+      "args": ["ecl-mcp"],
+      "type": "stdio"
     }
   }
 }
@@ -382,6 +388,7 @@ Some MCP clients support custom ports:
     "ecl": {
       "command": "ecl-mcp",
       "args": [],
+      "type": "stdio",
       "env": {
         "PORT": "3000"
       }

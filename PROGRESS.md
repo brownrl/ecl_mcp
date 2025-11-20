@@ -1234,7 +1234,8 @@ npx ecl-mcp
   "mcpServers": {
     "ecl": {
       "command": "npx",
-      "args": ["ecl-mcp"]
+      "args": ["ecl-mcp"],
+      "type": "stdio"
     }
   }
 }
