@@ -4,6 +4,7 @@ import * as Search from '../search/index.js';
 import * as Generator from '../generator/index.js';
 import * as Relationships from '../relationships/index.js';
 import * as Utils from '../utils/index.js';
+import * as Introspection from '../introspection/index.js';
 import { performHealthCheck } from '../utils/health-check.js';
 import { globalTracker } from '../utils/performance.js';
 import { getLogoUrl } from '../utils/asset-library.js';
@@ -60,9 +61,6 @@ export async function handleToolCall(name, args, eclData) {
             let detailsData = null;
 
             // Always fetch details first if requested, or if we need to resolve the ID
-            // If details is NOT requested but others are, we might want to resolve ID first anyway to ensure consistency
-            // But for now, let's assume if details is requested, we use its ID.
-
             if (include.includes('details')) {
                 const detailsResult = Search.getComponentDetails(db, component);
                 results.details = detailsResult;
@@ -72,31 +70,44 @@ export async function handleToolCall(name, args, eclData) {
                     detailsData = detailsResult.data;
                 }
             } else {
-                // If details not requested, try to resolve ID quickly to ensure consistency across other calls
-                // We can use getComponentDetails internally just for ID resolution if needed, 
-                // or just let them rely on the string (but that risks inconsistency as seen).
-                // Let's do a quick lookup if it's a string
+                // Resolve ID if it's a string to ensure consistency
                 if (typeof component === 'string') {
                     const resolved = Search.getComponentDetails(db, component);
                     if (resolved.success && resolved.data) {
                         componentId = resolved.data.id;
+                        detailsData = resolved.data;
                     }
                 }
             }
 
             if (include.includes('api')) {
+                // API data retrieval (placeholder for future)
             }
 
             if (include.includes('examples')) {
                 results.examples = Search.getComponentExamples(db, componentId);
             }
+            
             if (include.includes('guidance')) {
                 results.guidance = Search.getComponentGuidance(db, componentId);
             }
+            
             if (include.includes('nesting')) {
-                // Nesting rules might still need the name if they are static map based
-                // But let's pass the original component name/ID as fallback
-                results.nesting = Utils.getComponentNestingRules(detailsData ? detailsData.component_name : component);
+                // Use introspection to analyze nesting patterns from code
+                const componentName = detailsData ? detailsData.component_name : component;
+                results.nesting = Introspection.analyzeComponentNesting(db, componentName);
+            }
+            
+            if (include.includes('variants')) {
+                // Use introspection to discover variants from examples
+                const componentName = detailsData ? detailsData.component_name : component;
+                results.variants = Introspection.discoverComponentVariants(db, componentName);
+            }
+            
+            if (include.includes('pages')) {
+                // Get all related pages (usage, code, api, playground)
+                const componentName = detailsData ? detailsData.component_name : component;
+                results.pages = Introspection.getComponentPages(db, componentName);
             }
 
             return { content: [{ type: 'text', text: JSON.stringify(results, null, 2) }] };

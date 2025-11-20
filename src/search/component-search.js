@@ -333,14 +333,16 @@ export function getComponentDetails(db, identifier) {
     // Try by ID first, then by name
     let component;
     if (typeof identifier === 'number' || /^\d+$/.test(identifier)) {
+      // Use DISTINCT to prevent duplicate rows from multiple component_metadata entries
       component = db.prepare(`
-        SELECT 
+        SELECT DISTINCT
           p.id, p.url, p.title, p.category,
           cm.component_name, cm.component_type, cm.complexity, cm.status, cm.variant,
           cm.requires_js, cm.framework_specific
         FROM pages p
         LEFT JOIN component_metadata cm ON p.id = cm.page_id
         WHERE p.id = ?
+        LIMIT 1
       `).get(identifier);
     } else {
       // Normalize the search term: lowercase, remove spaces and hyphens
@@ -348,8 +350,9 @@ export function getComponentDetails(db, identifier) {
 
       // Prioritize exact match, then prefix match, then contains
       // Use explicit column selection to avoid id column conflict between pages and component_metadata
+      // Use DISTINCT to prevent duplicate rows from multiple component_metadata entries
       component = db.prepare(`
-        SELECT 
+        SELECT DISTINCT
           p.id, p.url, p.title, p.category,
           cm.component_name, cm.component_type, cm.complexity, cm.status, cm.variant,
           cm.requires_js, cm.framework_specific

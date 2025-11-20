@@ -45,7 +45,7 @@ export const toolDefinitions = [
     // 2. Unified Component Details
     {
         name: 'ecl_get_component',
-        description: 'Get complete component information including metadata, code examples, usage guidance, and nesting rules.',
+        description: 'Get complete component information including metadata, code examples, usage guidance, variants, and nesting rules.',
         inputSchema: {
             type: 'object',
             properties: {
@@ -57,9 +57,9 @@ export const toolDefinitions = [
                     type: 'array',
                     items: {
                         type: 'string',
-                        enum: ['details', 'examples', 'guidance', 'nesting'],
+                        enum: ['details', 'examples', 'guidance', 'nesting', 'variants', 'pages'],
                     },
-                    description: 'Information to include (default: ["details"])',
+                    description: 'Information to include: details (metadata), examples (code samples), guidance (usage rules), nesting (container requirements), variants (available options), pages (all related pages). Default: ["details"]',
                 },
             },
             required: ['component'],
