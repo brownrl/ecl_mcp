@@ -8,6 +8,7 @@
 import * as cheerio from 'cheerio';
 import { DIAGNOSTIC_PATTERNS, REQUIRED_ATTRIBUTES, WCAG_CRITERIA } from './patterns.js';
 import { validateEnhancedStructure } from './structure-validator.js';
+import { validateFormStructure } from './form-validator.js';
 
 /**
  * Validate component usage
@@ -43,6 +44,9 @@ export async function validateComponentUsage(db, component, htmlCode, jsCode = '
 
     // Run enhanced structure validation (NEW)
     validateEnhancedStructure($, component, errors, warnings);
+    
+    // Run form-specific validation (NEW)
+    validateFormStructure($, component, errors, warnings);
 
     // Run validation checks
     await runStructureValidation($, component, componentData, errors, warnings);
@@ -136,7 +140,7 @@ async function getComponentData(db, componentName) {
   `);
   let result = stmt.get(componentName);
   if (result) return result;
-  
+
   // Try singular/plural variations
   const variations = [
     componentName,
@@ -146,7 +150,7 @@ async function getComponentData(db, componentName) {
     componentName.charAt(0).toUpperCase() + componentName.slice(1) + 's',
     componentName.charAt(0).toUpperCase() + componentName.slice(1).replace(/s$/, '')
   ];
-  
+
   stmt = db.prepare(`
     SELECT * FROM component_metadata 
     WHERE LOWER(component_name) IN (${variations.map(() => 'LOWER(?)').join(',')})
@@ -154,7 +158,7 @@ async function getComponentData(db, componentName) {
   `);
   result = stmt.get(...variations);
   if (result) return result;
-  
+
   // Try partial match as last resort
   stmt = db.prepare(`
     SELECT * FROM component_metadata 
@@ -261,10 +265,10 @@ async function runAccessibilityValidation($, component, errors, warnings) {
   const headings = $('h1, h2, h3, h4, h5, h6').toArray().map(el => parseInt(el.name[1]));
   if (headings.length > 1) {
     for (let i = 1; i < headings.length; i++) {
-      if (headings[i] - headings[i-1] > 1) {
+      if (headings[i] - headings[i - 1] > 1) {
         warnings.push({
           severity: 'warning',
-          message: `Heading hierarchy skips from h${headings[i-1]} to h${headings[i]}`,
+          message: `Heading hierarchy skips from h${headings[i - 1]} to h${headings[i]}`,
           suggestion: 'Maintain sequential heading levels for screen readers',
           wcag: '2.4.6'
         });
@@ -375,8 +379,8 @@ async function runJavaScriptValidation(jsCode, component, componentData, errors,
 function runPatternChecks(htmlCode, component, errors, warnings) {
   for (const [patternName, pattern] of Object.entries(DIAGNOSTIC_PATTERNS)) {
     // Check if pattern applies to this component
-    if (pattern.components && !pattern.components.includes('*') && 
-        !pattern.components.includes(component.toLowerCase())) {
+    if (pattern.components && !pattern.components.includes('*') &&
+      !pattern.components.includes(component.toLowerCase())) {
       continue;
     }
 
@@ -436,7 +440,7 @@ function calculateQualityScore(errors, warnings) {
 function validateCardStructure($, errors, warnings) {
   $('.ecl-card').each((i, card) => {
     const $card = $(card);
-    
+
     // Check for card body
     if ($card.find('.ecl-card__body').length === 0) {
       warnings.push({
@@ -450,7 +454,7 @@ function validateCardStructure($, errors, warnings) {
 function validateButtonStructure($, errors, warnings) {
   $('.ecl-button').each((i, button) => {
     const $button = $(button);
-    
+
     // Check if button has icon
     if ($button.find('.ecl-icon').length > 0) {
       // Icon button should have label
@@ -467,7 +471,7 @@ function validateButtonStructure($, errors, warnings) {
 function validateModalStructure($, errors, warnings) {
   $('.ecl-modal').each((i, modal) => {
     const $modal = $(modal);
-    
+
     // Check for required ARIA attributes
     if (!$modal.attr('role') || $modal.attr('role') !== 'dialog') {
       errors.push({

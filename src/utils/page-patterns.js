@@ -9,23 +9,23 @@
  * Page structure patterns
  */
 const PAGE_PATTERNS = {
-  'news-article': {
-    name: 'News Article Page',
-    description: 'Standard news or press release article with breadcrumb navigation and metadata',
-    structure: [
-      { level: 0, component: 'Site Header', required: true, note: 'Fixed site-wide header with navigation' },
-      { level: 0, component: 'Breadcrumb', required: true, note: 'Navigation path to current page' },
-      { level: 0, component: 'Page Header', required: true, note: 'Article title, metadata, and image' },
-      { level: 0, component: 'Content Section', required: true, note: 'Main article content' },
-      { level: 1, component: 'Typography', parent: 'Content Section', note: 'Headings and paragraphs' },
-      { level: 1, component: 'Featured Media', parent: 'Content Section', optional: true, note: 'Images or video' },
-      { level: 1, component: 'Quote', parent: 'Content Section', optional: true, note: 'Pull quotes or blockquotes' },
-      { level: 0, component: 'Tag List', optional: true, note: 'Article tags or categories' },
-      { level: 0, component: 'Social Share', optional: true, note: 'Social media sharing buttons' },
-      { level: 0, component: 'Related Content', optional: true, note: 'Related articles or links' },
-      { level: 0, component: 'Site Footer', required: true, note: 'Site-wide footer' }
-    ],
-    html_template: `<!DOCTYPE html>
+    'news-article': {
+        name: 'News Article Page',
+        description: 'Standard news or press release article with breadcrumb navigation and metadata',
+        structure: [
+            { level: 0, component: 'Site Header', required: true, note: 'Fixed site-wide header with navigation' },
+            { level: 0, component: 'Breadcrumb', required: true, note: 'Navigation path to current page' },
+            { level: 0, component: 'Page Header', required: true, note: 'Article title, metadata, and image' },
+            { level: 0, component: 'Content Section', required: true, note: 'Main article content' },
+            { level: 1, component: 'Typography', parent: 'Content Section', note: 'Headings and paragraphs' },
+            { level: 1, component: 'Featured Media', parent: 'Content Section', optional: true, note: 'Images or video' },
+            { level: 1, component: 'Quote', parent: 'Content Section', optional: true, note: 'Pull quotes or blockquotes' },
+            { level: 0, component: 'Tag List', optional: true, note: 'Article tags or categories' },
+            { level: 0, component: 'Social Share', optional: true, note: 'Social media sharing buttons' },
+            { level: 0, component: 'Related Content', optional: true, note: 'Related articles or links' },
+            { level: 0, component: 'Site Footer', required: true, note: 'Site-wide footer' }
+        ],
+        html_template: `<!DOCTYPE html>
 <html lang="en" class="no-js">
 <head>
   <!-- Head content from ecl_get_page_requirements -->
@@ -71,21 +71,21 @@ const PAGE_PATTERNS = {
   </footer>
 </body>
 </html>`
-  },
+    },
 
-  'landing-page': {
-    name: 'Landing Page',
-    description: 'Homepage or campaign landing page with hero banner and content sections',
-    structure: [
-      { level: 0, component: 'Site Header', required: true },
-      { level: 0, component: 'Page Banner', required: true, note: 'Hero section with CTA' },
-      { level: 0, component: 'Content Sections', required: true },
-      { level: 1, component: 'Featured Items', parent: 'Content Sections', note: 'Highlighted content cards' },
-      { level: 1, component: 'Cards Grid', parent: 'Content Sections', note: '2-4 column card layout' },
-      { level: 0, component: 'Call to Action', optional: true, note: 'CTA banner or section' },
-      { level: 0, component: 'Site Footer', required: true }
-    ],
-    html_template: `<!DOCTYPE html>
+    'landing-page': {
+        name: 'Landing Page',
+        description: 'Homepage or campaign landing page with hero banner and content sections',
+        structure: [
+            { level: 0, component: 'Site Header', required: true },
+            { level: 0, component: 'Page Banner', required: true, note: 'Hero section with CTA' },
+            { level: 0, component: 'Content Sections', required: true },
+            { level: 1, component: 'Featured Items', parent: 'Content Sections', note: 'Highlighted content cards' },
+            { level: 1, component: 'Cards Grid', parent: 'Content Sections', note: '2-4 column card layout' },
+            { level: 0, component: 'Call to Action', optional: true, note: 'CTA banner or section' },
+            { level: 0, component: 'Site Footer', required: true }
+        ],
+        html_template: `<!DOCTYPE html>
 <html lang="en" class="no-js">
 <head>
   <!-- Head content -->
@@ -122,23 +122,23 @@ const PAGE_PATTERNS = {
   </footer>
 </body>
 </html>`
-  },
+    },
 
-  'list-page': {
-    name: 'List/Index Page',
-    description: 'Filterable list or index page with search and pagination',
-    structure: [
-      { level: 0, component: 'Site Header', required: true },
-      { level: 0, component: 'Breadcrumb', required: true },
-      { level: 0, component: 'Page Header', required: true },
-      { level: 0, component: 'Search Form', optional: true, note: 'Filter or search interface' },
-      { level: 0, component: 'Filter Sidebar', optional: true, note: 'Faceted navigation' },
-      { level: 0, component: 'Content List', required: true },
-      { level: 1, component: 'List Items', parent: 'Content List', note: 'Repeating list items or cards' },
-      { level: 0, component: 'Pagination', required: true, note: 'Navigate between pages' },
-      { level: 0, component: 'Site Footer', required: true }
-    ],
-    html_template: `<!DOCTYPE html>
+    'list-page': {
+        name: 'List/Index Page',
+        description: 'Filterable list or index page with search and pagination',
+        structure: [
+            { level: 0, component: 'Site Header', required: true },
+            { level: 0, component: 'Breadcrumb', required: true },
+            { level: 0, component: 'Page Header', required: true },
+            { level: 0, component: 'Search Form', optional: true, note: 'Filter or search interface' },
+            { level: 0, component: 'Filter Sidebar', optional: true, note: 'Faceted navigation' },
+            { level: 0, component: 'Content List', required: true },
+            { level: 1, component: 'List Items', parent: 'Content List', note: 'Repeating list items or cards' },
+            { level: 0, component: 'Pagination', required: true, note: 'Navigate between pages' },
+            { level: 0, component: 'Site Footer', required: true }
+        ],
+        html_template: `<!DOCTYPE html>
 <html lang="en" class="no-js">
 <head>
   <!-- Head content -->
@@ -185,24 +185,24 @@ const PAGE_PATTERNS = {
   </footer>
 </body>
 </html>`
-  },
+    },
 
-  'documentation-page': {
-    name: 'Documentation Page',
-    description: 'Technical documentation with sidebar navigation and code examples',
-    structure: [
-      { level: 0, component: 'Site Header', required: true },
-      { level: 0, component: 'Breadcrumb', required: true },
-      { level: 0, component: 'Page Layout (Sidebar)', required: true },
-      { level: 1, component: 'Inpage Navigation', parent: 'Page Layout', required: true, note: 'Table of contents' },
-      { level: 1, component: 'Main Content', parent: 'Page Layout', required: true },
-      { level: 2, component: 'Typography', parent: 'Main Content', note: 'Headings, paragraphs' },
-      { level: 2, component: 'Code Blocks', parent: 'Main Content', note: 'Syntax-highlighted code' },
-      { level: 2, component: 'Tables', parent: 'Main Content', optional: true },
-      { level: 2, component: 'Accordion', parent: 'Main Content', optional: true, note: 'Expandable sections' },
-      { level: 0, component: 'Site Footer', required: true }
-    ],
-    html_template: `<!DOCTYPE html>
+    'documentation-page': {
+        name: 'Documentation Page',
+        description: 'Technical documentation with sidebar navigation and code examples',
+        structure: [
+            { level: 0, component: 'Site Header', required: true },
+            { level: 0, component: 'Breadcrumb', required: true },
+            { level: 0, component: 'Page Layout (Sidebar)', required: true },
+            { level: 1, component: 'Inpage Navigation', parent: 'Page Layout', required: true, note: 'Table of contents' },
+            { level: 1, component: 'Main Content', parent: 'Page Layout', required: true },
+            { level: 2, component: 'Typography', parent: 'Main Content', note: 'Headings, paragraphs' },
+            { level: 2, component: 'Code Blocks', parent: 'Main Content', note: 'Syntax-highlighted code' },
+            { level: 2, component: 'Tables', parent: 'Main Content', optional: true },
+            { level: 2, component: 'Accordion', parent: 'Main Content', optional: true, note: 'Expandable sections' },
+            { level: 0, component: 'Site Footer', required: true }
+        ],
+        html_template: `<!DOCTYPE html>
 <html lang="en" class="no-js">
 <head>
   <!-- Head content -->
@@ -243,22 +243,22 @@ const PAGE_PATTERNS = {
   </footer>
 </body>
 </html>`
-  },
+    },
 
-  'search-results': {
-    name: 'Search Results Page',
-    description: 'Search results with filters and result metadata',
-    structure: [
-      { level: 0, component: 'Site Header', required: true },
-      { level: 0, component: 'Search Form', required: true, note: 'Prominent search box' },
-      { level: 0, component: 'Filter Sidebar', optional: true },
-      { level: 0, component: 'Results Summary', required: true, note: 'Count and search term' },
-      { level: 0, component: 'Result Items', required: true },
-      { level: 1, component: 'Result Card', parent: 'Result Items', note: 'Title, snippet, metadata' },
-      { level: 0, component: 'Pagination', required: true },
-      { level: 0, component: 'Site Footer', required: true }
-    ],
-    html_template: `<!DOCTYPE html>
+    'search-results': {
+        name: 'Search Results Page',
+        description: 'Search results with filters and result metadata',
+        structure: [
+            { level: 0, component: 'Site Header', required: true },
+            { level: 0, component: 'Search Form', required: true, note: 'Prominent search box' },
+            { level: 0, component: 'Filter Sidebar', optional: true },
+            { level: 0, component: 'Results Summary', required: true, note: 'Count and search term' },
+            { level: 0, component: 'Result Items', required: true },
+            { level: 1, component: 'Result Card', parent: 'Result Items', note: 'Title, snippet, metadata' },
+            { level: 0, component: 'Pagination', required: true },
+            { level: 0, component: 'Site Footer', required: true }
+        ],
+        html_template: `<!DOCTYPE html>
 <html lang="en" class="no-js">
 <head>
   <!-- Head content -->
@@ -303,231 +303,231 @@ const PAGE_PATTERNS = {
   </footer>
 </body>
 </html>`
-  }
+    }
 };
 
 /**
  * Component nesting rules
  */
 const NESTING_RULES = {
-  'Site Header': {
-    level: 'page',
-    position: 'top',
-    children_allowed: ['Menu', 'Search Form', 'Language Selector'],
-    parent_forbidden: ['Main', 'Section', 'Article'],
-    note: 'Must be direct child of <body>, before main content'
-  },
-  'Site Footer': {
-    level: 'page',
-    position: 'bottom',
-    children_allowed: ['Footer Section', 'Link List', 'Social Media Links'],
-    parent_forbidden: ['Main', 'Section', 'Article'],
-    note: 'Must be direct child of <body>, after main content'
-  },
-  'Breadcrumb': {
-    level: 'navigation',
-    position: 'after-header',
-    parent_recommended: 'body',
-    note: 'Place after Site Header, before Page Header'
-  },
-  'Page Header': {
-    level: 'page-section',
-    position: 'top-of-content',
-    children_allowed: ['Typography', 'Meta Information', 'Image'],
-    note: 'Use once per page, contains page title'
-  },
-  'Card': {
-    level: 'component',
-    parent_recommended: 'Grid Container',
-    children_required: ['Card Body'],
-    children_optional: ['Card Header', 'Card Footer', 'Card Image'],
-    note: 'Nest inside grid (.ecl-row) for layouts'
-  },
-  'Accordion': {
-    level: 'component',
-    parent_recommended: 'Main',
-    children_required: ['Accordion Item'],
-    note: 'Each item requires header and content'
-  },
-  'Modal': {
-    level: 'overlay',
-    parent_recommended: 'body',
-    children_required: ['Modal Container', 'Modal Content'],
-    note: 'Place at end of <body>, initialized with JavaScript'
-  }
+    'Site Header': {
+        level: 'page',
+        position: 'top',
+        children_allowed: ['Menu', 'Search Form', 'Language Selector'],
+        parent_forbidden: ['Main', 'Section', 'Article'],
+        note: 'Must be direct child of <body>, before main content'
+    },
+    'Site Footer': {
+        level: 'page',
+        position: 'bottom',
+        children_allowed: ['Footer Section', 'Link List', 'Social Media Links'],
+        parent_forbidden: ['Main', 'Section', 'Article'],
+        note: 'Must be direct child of <body>, after main content'
+    },
+    'Breadcrumb': {
+        level: 'navigation',
+        position: 'after-header',
+        parent_recommended: 'body',
+        note: 'Place after Site Header, before Page Header'
+    },
+    'Page Header': {
+        level: 'page-section',
+        position: 'top-of-content',
+        children_allowed: ['Typography', 'Meta Information', 'Image'],
+        note: 'Use once per page, contains page title'
+    },
+    'Card': {
+        level: 'component',
+        parent_recommended: 'Grid Container',
+        children_required: ['Card Body'],
+        children_optional: ['Card Header', 'Card Footer', 'Card Image'],
+        note: 'Nest inside grid (.ecl-row) for layouts'
+    },
+    'Accordion': {
+        level: 'component',
+        parent_recommended: 'Main',
+        children_required: ['Accordion Item'],
+        note: 'Each item requires header and content'
+    },
+    'Modal': {
+        level: 'overlay',
+        parent_recommended: 'body',
+        children_required: ['Modal Container', 'Modal Content'],
+        note: 'Place at end of <body>, initialized with JavaScript'
+    }
 };
 
 /**
  * Get all page patterns
  */
 export function getAllPagePatterns() {
-  const startTime = Date.now();
+    const startTime = Date.now();
 
-  return {
-    success: true,
-    data: {
-      patterns: Object.entries(PAGE_PATTERNS).map(([key, pattern]) => ({
-        id: key,
-        ...pattern,
-        component_count: pattern.structure.filter(s => s.required).length,
-        optional_count: pattern.structure.filter(s => s.optional).length
-      })),
-      nesting_rules: NESTING_RULES,
-      general_guidelines: [
-        'Always start with Site Header and end with Site Footer',
-        'Use Breadcrumb for navigational context (except on homepage)',
-        'Wrap main content in <main class="ecl-container">',
-        'Use Page Header for page titles and metadata',
-        'Maintain semantic HTML structure (header, nav, main, article, section, footer)',
-        'Apply ECL utility classes to semantic elements',
-        'Test component hierarchy with ecl_validate_component_usage',
-        'Use ecl_generate_complete_page for quick page scaffolding'
-      ]
-    },
-    metadata: {
-      tool: 'ecl_get_page_structure_patterns',
-      execution_time_ms: Date.now() - startTime,
-      source: 'ecl-static-data',
-      version: '2.0',
-      ecl_version: '4.11.1'
-    }
-  };
+    return {
+        success: true,
+        data: {
+            patterns: Object.entries(PAGE_PATTERNS).map(([key, pattern]) => ({
+                id: key,
+                ...pattern,
+                component_count: pattern.structure.filter(s => s.required).length,
+                optional_count: pattern.structure.filter(s => s.optional).length
+            })),
+            nesting_rules: NESTING_RULES,
+            general_guidelines: [
+                'Always start with Site Header and end with Site Footer',
+                'Use Breadcrumb for navigational context (except on homepage)',
+                'Wrap main content in <main class="ecl-container">',
+                'Use Page Header for page titles and metadata',
+                'Maintain semantic HTML structure (header, nav, main, article, section, footer)',
+                'Apply ECL utility classes to semantic elements',
+                'Test component hierarchy with ecl_validate_component_usage',
+                'Use ecl_generate_complete_page for quick page scaffolding'
+            ]
+        },
+        metadata: {
+            tool: 'ecl_get_page_structure_patterns',
+            execution_time_ms: Date.now() - startTime,
+            source: 'ecl-static-data',
+            version: '2.0',
+            ecl_version: '4.11.1'
+        }
+    };
 }
 
 /**
  * Get specific page pattern
  */
 export function getPagePattern(patternId) {
-  const startTime = Date.now();
-  const pattern = PAGE_PATTERNS[patternId];
+    const startTime = Date.now();
+    const pattern = PAGE_PATTERNS[patternId];
 
-  if (!pattern) {
-    return {
-      success: false,
-      data: { pattern: null },
-      errors: [{
-        code: 'PATTERN_NOT_FOUND',
-        message: `Page pattern "${patternId}" not found`,
-        available: Object.keys(PAGE_PATTERNS)
-      }],
-      metadata: {
-        tool: 'ecl_get_page_pattern',
-        execution_time_ms: Date.now() - startTime
-      }
-    };
-  }
-
-  return {
-    success: true,
-    data: {
-      pattern: {
-        id: patternId,
-        ...pattern,
-        implementation_steps: generateImplementationSteps(pattern),
-        required_components: pattern.structure.filter(s => s.required).map(s => s.component),
-        optional_components: pattern.structure.filter(s => s.optional).map(s => s.component)
-      }
-    },
-    metadata: {
-      tool: 'ecl_get_page_pattern',
-      execution_time_ms: Date.now() - startTime,
-      source: 'ecl-static-data',
-      version: '2.0'
+    if (!pattern) {
+        return {
+            success: false,
+            data: { pattern: null },
+            errors: [{
+                code: 'PATTERN_NOT_FOUND',
+                message: `Page pattern "${patternId}" not found`,
+                available: Object.keys(PAGE_PATTERNS)
+            }],
+            metadata: {
+                tool: 'ecl_get_page_pattern',
+                execution_time_ms: Date.now() - startTime
+            }
+        };
     }
-  };
+
+    return {
+        success: true,
+        data: {
+            pattern: {
+                id: patternId,
+                ...pattern,
+                implementation_steps: generateImplementationSteps(pattern),
+                required_components: pattern.structure.filter(s => s.required).map(s => s.component),
+                optional_components: pattern.structure.filter(s => s.optional).map(s => s.component)
+            }
+        },
+        metadata: {
+            tool: 'ecl_get_page_pattern',
+            execution_time_ms: Date.now() - startTime,
+            source: 'ecl-static-data',
+            version: '2.0'
+        }
+    };
 }
 
 /**
  * Generate implementation steps
  */
 function generateImplementationSteps(pattern) {
-  return [
-    {
-      step: 1,
-      action: 'Create HTML boilerplate',
-      command: 'Use ecl_get_page_requirements tool to generate complete page structure'
-    },
-    {
-      step: 2,
-      action: 'Add required components',
-      components: pattern.structure.filter(s => s.required).map(s => s.component),
-      command: 'Use ecl_get_complete_example for each component'
-    },
-    {
-      step: 3,
-      action: 'Add optional components',
-      components: pattern.structure.filter(s => s.optional).map(s => s.component),
-      note: 'Based on your content needs'
-    },
-    {
-      step: 4,
-      action: 'Validate structure',
-      command: 'Use ecl_validate_component_usage to check hierarchy and attributes'
-    },
-    {
-      step: 5,
-      action: 'Test in browser',
-      checklist: [
-        'All components render correctly',
-        'JavaScript initialization works',
-        'Responsive layout adapts to mobile',
-        'No console errors',
-        'Font rendering is correct'
-      ]
-    }
-  ];
+    return [
+        {
+            step: 1,
+            action: 'Create HTML boilerplate',
+            command: 'Use ecl_get_page_requirements tool to generate complete page structure'
+        },
+        {
+            step: 2,
+            action: 'Add required components',
+            components: pattern.structure.filter(s => s.required).map(s => s.component),
+            command: 'Use ecl_get_complete_example for each component'
+        },
+        {
+            step: 3,
+            action: 'Add optional components',
+            components: pattern.structure.filter(s => s.optional).map(s => s.component),
+            note: 'Based on your content needs'
+        },
+        {
+            step: 4,
+            action: 'Validate structure',
+            command: 'Use ecl_validate_component_usage to check hierarchy and attributes'
+        },
+        {
+            step: 5,
+            action: 'Test in browser',
+            checklist: [
+                'All components render correctly',
+                'JavaScript initialization works',
+                'Responsive layout adapts to mobile',
+                'No console errors',
+                'Font rendering is correct'
+            ]
+        }
+    ];
 }
 
 /**
  * Get component nesting rules
  */
 export function getComponentNestingRules(componentName) {
-  const startTime = Date.now();
-  const rules = NESTING_RULES[componentName];
+    const startTime = Date.now();
+    const rules = NESTING_RULES[componentName];
 
-  if (!rules) {
-    return {
-      success: false,
-      data: { rules: null },
-      errors: [{
-        code: 'RULES_NOT_FOUND',
-        message: `No specific nesting rules found for "${componentName}"`,
-        note: 'Component may follow general HTML nesting rules'
-      }],
-      metadata: {
-        tool: 'ecl_get_nesting_rules',
-        execution_time_ms: Date.now() - startTime
-      }
-    };
-  }
-
-  return {
-    success: true,
-    data: {
-      component: componentName,
-      rules,
-      examples: generateNestingExamples(componentName, rules)
-    },
-    metadata: {
-      tool: 'ecl_get_nesting_rules',
-      execution_time_ms: Date.now() - startTime,
-      source: 'ecl-static-data',
-      version: '2.0'
+    if (!rules) {
+        return {
+            success: false,
+            data: { rules: null },
+            errors: [{
+                code: 'RULES_NOT_FOUND',
+                message: `No specific nesting rules found for "${componentName}"`,
+                note: 'Component may follow general HTML nesting rules'
+            }],
+            metadata: {
+                tool: 'ecl_get_nesting_rules',
+                execution_time_ms: Date.now() - startTime
+            }
+        };
     }
-  };
+
+    return {
+        success: true,
+        data: {
+            component: componentName,
+            rules,
+            examples: generateNestingExamples(componentName, rules)
+        },
+        metadata: {
+            tool: 'ecl_get_nesting_rules',
+            execution_time_ms: Date.now() - startTime,
+            source: 'ecl-static-data',
+            version: '2.0'
+        }
+    };
 }
 
 /**
  * Generate nesting examples
  */
 function generateNestingExamples(componentName, rules) {
-  const examples = {
-    correct: `<!-- Correct nesting for ${componentName} -->`,
-    incorrect: `<!-- Incorrect nesting for ${componentName} -->`
-  };
+    const examples = {
+        correct: `<!-- Correct nesting for ${componentName} -->`,
+        incorrect: `<!-- Incorrect nesting for ${componentName} -->`
+    };
 
-  if (componentName === 'Card' && rules.parent_recommended === 'Grid Container') {
-    examples.correct = `<div class="ecl-row">
+    if (componentName === 'Card' && rules.parent_recommended === 'Grid Container') {
+        examples.correct = `<div class="ecl-row">
   <div class="ecl-col-12 ecl-col-md-4">
     <article class="ecl-card">
       <div class="ecl-card__body">
@@ -536,13 +536,13 @@ function generateNestingExamples(componentName, rules) {
     </article>
   </div>
 </div>`;
-    examples.incorrect = `<!-- Don't place cards directly in body -->
+        examples.incorrect = `<!-- Don't place cards directly in body -->
 <article class="ecl-card">
   <div class="ecl-card__body">
     <!-- Card content -->
   </div>
 </article>`;
-  }
+    }
 
-  return examples;
+    return examples;
 }

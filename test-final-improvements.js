@@ -39,7 +39,7 @@ console.log('Site Header Validation:');
 console.log('  Errors:', errors.length);
 console.log('  Warnings:', warnings.length);
 if (errors.length > 0) {
-  console.log('  First error:', errors[0].message);
+    console.log('  First error:', errors[0].message);
 }
 
 // Test Accordion with missing aria attributes
@@ -64,9 +64,9 @@ console.log('\nAccordion Validation:');
 console.log('  Errors:', errors2.length);
 console.log('  Warnings:', warnings2.length);
 if (errors2.length > 0) {
-  errors2.forEach((err, i) => {
-    console.log(`  Error ${i + 1}:`, err.message);
-  });
+    errors2.forEach((err, i) => {
+        console.log(`  Error ${i + 1}:`, err.message);
+    });
 }
 
 console.log('\n=== Test 2: Icon Library ===\n');
@@ -84,9 +84,9 @@ const searchResult = Utils.searchIcons('search', { limit: 3 });
 console.log('\nSearch Icons (query: "search"):');
 console.log('  Found:', searchResult.data.count);
 if (searchResult.data.results.length > 0) {
-  console.log('  First result:', searchResult.data.results[0].name);
-  console.log('  Category:', searchResult.data.results[0].category);
-  console.log('  CDN path (EC):', searchResult.data.results[0].cdn_path_ec.substring(0, 80) + '...');
+    console.log('  First result:', searchResult.data.results[0].name);
+    console.log('  Category:', searchResult.data.results[0].category);
+    console.log('  CDN path (EC):', searchResult.data.results[0].cdn_path_ec.substring(0, 80) + '...');
 }
 
 // Get icon by ID
@@ -119,9 +119,9 @@ const typoSearch = Utils.searchTypographyUtilities('heading');
 console.log('\nTypography Search (query: "heading"):');
 console.log('  Found:', typoSearch.data.count);
 if (typoSearch.data.results.length > 0) {
-  console.log('  First result:', typoSearch.data.results[0].class);
-  console.log('  Category:', typoSearch.data.results[0].category);
-  console.log('  Example:', typoSearch.data.results[0].example);
+    console.log('  First result:', typoSearch.data.results[0].class);
+    console.log('  Category:', typoSearch.data.results[0].category);
+    console.log('  Example:', typoSearch.data.results[0].example);
 }
 
 console.log('\n=== Test 4: Page Structure Patterns ===\n');
@@ -163,8 +163,8 @@ console.log('\nNon-existent Pattern:');
 console.log('  Success:', badPattern.success);
 console.log('  Has errors:', badPattern.errors && badPattern.errors.length > 0);
 if (badPattern.errors) {
-  console.log('  Error message:', badPattern.errors[0].message);
-  console.log('  Available patterns:', badPattern.errors[0].available.join(', '));
+    console.log('  Error message:', badPattern.errors[0].message);
+    console.log('  Available patterns:', badPattern.errors[0].available.join(', '));
 }
 
 closeDatabase(db);

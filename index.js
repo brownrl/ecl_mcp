@@ -972,6 +972,84 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         },
       },
 
+      // ===== FORM COMPONENTS (Phase 7) =====
+      {
+        name: 'ecl_get_form_templates',
+        description: 'Get validated form component templates with exact ECL structure. Returns all 9 form templates (text input, email, select, textarea, checkbox, radio, button) with critical notes about correct structure.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            template_type: {
+              type: 'string',
+              enum: ['form-text-input-required', 'form-text-input-optional', 'form-email-input', 'form-select-dropdown', 'form-textarea', 'form-checkbox-single', 'form-checkbox-group', 'form-radio-group', 'form-submit-button'],
+              description: 'Specific template type (optional - omit to get all templates)',
+            },
+          },
+        },
+      },
+      {
+        name: 'ecl_get_complete_contact_form',
+        description: 'Get complete validated contact form example with all form elements. Includes text inputs, email, select dropdown, textarea, checkbox, and submit button. All structure is correct and validated.',
+        inputSchema: {
+          type: 'object',
+          properties: {},
+        },
+      },
+      {
+        name: 'ecl_get_form_guidance',
+        description: 'Get comprehensive form structure guidance including critical requirements, best practices, and common mistakes. Covers helper text positioning, label structure, required indicators, and accessibility.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            query: {
+              type: 'string',
+              description: 'Search query for specific guidance (optional)',
+            },
+          },
+        },
+      },
+      {
+        name: 'ecl_validate_form_structure',
+        description: 'Validate form HTML structure against ECL requirements. Checks for helper text positioning, label attributes, required indicators, select dropdown structure, checkbox/radio structure, and accessibility attributes.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            component: {
+              type: 'string',
+              enum: ['Text Field', 'Select', 'Text Area', 'Checkbox', 'Radio', 'Complete Forms'],
+              description: 'Form component type to validate',
+            },
+            html_code: {
+              type: 'string',
+              description: 'HTML code to validate',
+            },
+          },
+          required: ['component', 'html_code'],
+        },
+      },
+      {
+        name: 'ecl_troubleshoot_forms',
+        description: 'Get troubleshooting advice for common form issues. Analyzes symptoms and provides causes, fixes, and related templates. Covers spacing issues, helper text problems, select dropdowns, checkboxes, required indicators, and accessibility.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            issue: {
+              type: 'string',
+              description: 'Description of the form issue (e.g., "spacing", "helper-text", "select", "checkbox", "required", "accessibility")',
+            },
+          },
+          required: ['issue'],
+        },
+      },
+      {
+        name: 'ecl_get_form_validation_checklist',
+        description: 'Get comprehensive form validation checklist. Includes structure requirements, accessibility checks, component-specific validations, and visual symptom checks.',
+        inputSchema: {
+          type: 'object',
+          properties: {},
+        },
+      },
+
       // ===== RELATIONSHIPS & DEPENDENCIES (Phase 6) =====
       {
         name: 'ecl_find_components_by_tag',
@@ -2191,6 +2269,122 @@ For manual initialization details, check individual component documentation.
 
     if (name === 'ecl_get_component_nesting_rules') {
       const result = Utils.getComponentNestingRules(args.component_name);
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
+      };
+    }
+
+    // Form Tools
+    if (name === 'ecl_get_form_templates') {
+      if (args.template_type) {
+        const result = Utils.getFormTemplate(args.template_type);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      } else {
+        const result = Utils.getFormTemplates();
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+    }
+
+    if (name === 'ecl_get_complete_contact_form') {
+      const result = Utils.getCompleteContactForm();
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
+      };
+    }
+
+    if (name === 'ecl_get_form_guidance') {
+      if (args.query) {
+        const result = Utils.searchFormGuidance(args.query);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      } else {
+        const result = Utils.getCompleteFormGuidance();
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+    }
+
+    if (name === 'ecl_validate_form_structure') {
+      const cheerio = await import('cheerio');
+      const $ = cheerio.load(args.html_code);
+      const errors = [];
+      const warnings = [];
+      
+      Validation.validateFormStructure($, args.component, errors, warnings);
+      
+      const troubleshooting = Validation.getFormTroubleshooting(errors, warnings);
+      
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({
+              component: args.component,
+              errors,
+              warnings,
+              troubleshooting,
+              is_valid: errors.length === 0,
+              summary: {
+                error_count: errors.length,
+                warning_count: warnings.length,
+                critical_issues: errors.filter(e => e.severity === 'error').length
+              }
+            }, null, 2),
+          },
+        ],
+      };
+    }
+
+    if (name === 'ecl_troubleshoot_forms') {
+      const result = Utils.troubleshootFormIssue(args.issue);
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
+      };
+    }
+
+    if (name === 'ecl_get_form_validation_checklist') {
+      const result = Utils.getFormValidationChecklist();
       return {
         content: [
           {
