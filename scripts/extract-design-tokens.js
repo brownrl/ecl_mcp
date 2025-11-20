@@ -36,7 +36,7 @@ const stats = {
  */
 function extractColorTokens() {
   console.log('\n📊 Extracting color tokens...');
-  
+
   const sections = db.prepare(`
     SELECT heading, content 
     FROM content_sections 
@@ -56,30 +56,30 @@ function extractColorTokens() {
   for (const section of sections) {
     const heading = section.heading;
     const content = section.content;
-    
+
     // Match pattern: "Primary-180--ecl-color-primary-180#051036COPY"
     // Format: ColorName--ecl-color-variable#HEXCOPY
     const colorRegex = /([\w\s()-]+?)--ecl-color-([\w-]+)#([0-9A-F]{6})COPY/g;
     let match;
-    
+
     while ((match = colorRegex.exec(content)) !== null) {
       const [_, displayName, cssVar, hexValue] = match;
-      
+
       // Clean up display name (remove extra spaces, handle "(Primary)" annotations)
       const cleanName = displayName.trim().replace(/\s+/g, ' ');
       const cssVariable = `--ecl-color-${cssVar}`;
       const value = `#${hexValue}`;
-      
+
       // Skip if already seen
       if (seen.has(cleanName)) continue;
       seen.add(cleanName);
-      
+
       // Determine usage context from heading
       let usageContext = heading;
       if (cleanName.includes('(Primary)') || cleanName.includes('(Neutral)')) {
         usageContext += ' - Base color';
       }
-      
+
       insertStmt.run(
         'color',
         cleanName,
@@ -88,12 +88,12 @@ function extractColorTokens() {
         `${heading} color token`,
         usageContext
       );
-      
+
       stats.colors++;
       stats.total++;
     }
   }
-  
+
   console.log(`   ✓ Extracted ${stats.colors} color tokens`);
 }
 
@@ -103,7 +103,7 @@ function extractColorTokens() {
  */
 function extractSpacingTokens() {
   console.log('\n📏 Extracting spacing tokens...');
-  
+
   const sections = db.prepare(`
     SELECT heading, content 
     FROM content_sections 
@@ -133,15 +133,15 @@ function extractSpacingTokens() {
   // Pattern: "6xl64px - 4rem" (no spaces between name and size)
   const spacingRegex = /(\d*x?[ls])(\d+)px\s*-\s*([\d.]+)rem/g;
   let match;
-  
+
   while ((match = spacingRegex.exec(spacingSection.content)) !== null) {
     const [_, sizeName, pxValue, remValue] = match;
-    
+
     const name = sizeName;
     const value = `${pxValue}px`;
     const cssVariable = `--ecl-spacing-${name}`;
     const description = `Spacing token: ${pxValue}px / ${remValue}rem`;
-    
+
     // Determine usage context
     let usageContext = 'Layout and component spacing';
     if (['6xl', '5xl', '4xl', '3xl', '2xl', 'xl'].includes(name)) {
@@ -149,7 +149,7 @@ function extractSpacingTokens() {
     } else {
       usageContext = 'Inner component spacing - fixed horizontal or vertical spacing';
     }
-    
+
     insertStmt(
       'spacing',
       name,
@@ -158,11 +158,11 @@ function extractSpacingTokens() {
       description,
       usageContext
     );
-    
+
     stats.spacing++;
     stats.total++;
   }
-  
+
   console.log(`   ✓ Extracted ${stats.spacing} spacing tokens`);
 }
 
@@ -172,7 +172,7 @@ function extractSpacingTokens() {
  */
 function extractTypographyTokens() {
   console.log('\n🔤 Extracting typography tokens...');
-  
+
   const sections = db.prepare(`
     SELECT heading, content 
     FROM content_sections 
@@ -213,7 +213,7 @@ function extractTypographyTokens() {
       'Regular font weight for body text',
       'Body text, paragraphs'
     );
-    
+
     insertStmt.run(
       'typography',
       'font-weight-bold',
@@ -222,7 +222,7 @@ function extractTypographyTokens() {
       'Bold font weight for headings and emphasis',
       'Headings, important text'
     );
-    
+
     stats.typography += 2;
     stats.total += 2;
   }
@@ -230,29 +230,29 @@ function extractTypographyTokens() {
   // Extract heading sizes
   // Pattern: "3XL - 2.5rem - 40px"
   const sizeRegex = /(\d*X?L)\s*-\s*([\d.]+)rem\s*-\s*(\d+)px/g;
-  
+
   for (const section of sections) {
     if (section.heading.startsWith('Heading ')) {
       const headingLevel = section.heading.match(/Heading (\d)/)?.[1];
       if (!headingLevel) continue;
-      
+
       let match;
       const sizes = [];
-      
+
       while ((match = sizeRegex.exec(section.content)) !== null) {
         const [_, sizeName, remValue, pxValue] = match;
         sizes.push({ sizeName, remValue, pxValue });
       }
-      
+
       // Process unique sizes (desktop variants)
       const uniqueSizes = [...new Map(sizes.map(s => [s.sizeName, s])).values()];
-      
+
       for (const { sizeName, remValue, pxValue } of uniqueSizes) {
         const name = `heading-${headingLevel}-${sizeName.toLowerCase()}`;
         const cssVariable = `--ecl-font-size-${name}`;
         const description = `Heading ${headingLevel} font size: ${pxValue}px / ${remValue}rem`;
         const usageContext = `h${headingLevel} elements`;
-        
+
         insertStmt.run(
           'typography',
           name,
@@ -261,7 +261,7 @@ function extractTypographyTokens() {
           description,
           usageContext
         );
-        
+
         stats.typography++;
         stats.total++;
       }
@@ -279,7 +279,7 @@ function extractTypographyTokens() {
       'Line height ratio for body text - 1:1.5 ratio',
       'Paragraphs, standard copy'
     );
-    
+
     insertStmt.run(
       'typography',
       'line-height-heading',
@@ -288,11 +288,11 @@ function extractTypographyTokens() {
       'Line height ratio for headings - 1:1.2 ratio',
       'All heading levels'
     );
-    
+
     stats.typography += 2;
     stats.total += 2;
   }
-  
+
   console.log(`   ✓ Extracted ${stats.typography} typography tokens`);
 }
 
@@ -302,7 +302,7 @@ function extractTypographyTokens() {
 function main() {
   console.log('🚀 ECL Design Token Extraction');
   console.log('================================\n');
-  
+
   try {
     // Clear existing tokens
     const existing = db.prepare('SELECT COUNT(*) as count FROM design_tokens').get();
@@ -310,12 +310,12 @@ function main() {
       console.log(`⚠️  Found ${existing.count} existing tokens - clearing...`);
       db.prepare('DELETE FROM design_tokens').run();
     }
-    
+
     // Extract all token types
     extractColorTokens();
     extractSpacingTokens();
     extractTypographyTokens();
-    
+
     // Display summary
     console.log('\n✅ Extraction Complete!');
     console.log('================================');
@@ -324,11 +324,11 @@ function main() {
     console.log(`   Typography: ${stats.typography}`);
     console.log(`   ─────────────────────────`);
     console.log(`   Total:      ${stats.total}\n`);
-    
+
     // Verify database
     const finalCount = db.prepare('SELECT COUNT(*) as count FROM design_tokens').get();
     console.log(`📊 Database now contains ${finalCount.count} design tokens`);
-    
+
     // Show category breakdown
     const breakdown = db.prepare(`
       SELECT category, COUNT(*) as count 
@@ -336,12 +336,12 @@ function main() {
       GROUP BY category 
       ORDER BY category
     `).all();
-    
+
     console.log('\nCategory Breakdown:');
     breakdown.forEach(row => {
       console.log(`   ${row.category.padEnd(12)}: ${row.count}`);
     });
-    
+
   } catch (error) {
     console.error('\n❌ Error during extraction:', error);
     process.exit(1);

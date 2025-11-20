@@ -16,6 +16,9 @@ import * as Search from './src/search/index.js';
 import * as Validation from './src/validation/index.js';
 import * as Generator from './src/generator/index.js';
 import * as Relationships from './src/relationships/index.js';
+import { performHealthCheck } from './src/utils/health-check.js';
+import { globalCache, startCleanupJob } from './src/utils/cache.js';
+import { globalTracker } from './src/utils/performance.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -925,6 +928,16 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           required: ['component'],
         },
       },
+      
+      // ===== SYSTEM HEALTH & DIAGNOSTICS (Phase 8) =====
+      {
+        name: 'ecl_health_check',
+        description: 'Get system health status including database, cache, performance metrics, and tool availability.',
+        inputSchema: {
+          type: 'object',
+          properties: {},
+        },
+      },
     ],
   };
 });
@@ -1788,6 +1801,33 @@ For manual initialization details, check individual component documentation.
         ],
       };
     }
+    
+    if (name === 'ecl_health_check') {
+      const startTime = Date.now();
+      const health = performHealthCheck(db);
+      const executionTime = Date.now() - startTime;
+      
+      // Track performance
+      globalTracker.track('ecl_health_check', executionTime, true);
+      
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({
+              success: health.status === 'healthy',
+              data: health,
+              metadata: {
+                tool: 'ecl_health_check',
+                execution_time_ms: executionTime,
+                source: 'system',
+                version: '2.0'
+              }
+            }, null, 2),
+          },
+        ],
+      };
+    }
 
     return {
       content: [
@@ -1819,7 +1859,12 @@ For manual initialization details, check individual component documentation.
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
+  
+  // Start cache cleanup job (runs every 5 minutes)
+  startCleanupJob();
+  
   console.error('ECL MCP Server running on stdio');
+  console.error('Cache cleanup job started');
 }
 
 main().catch((error) => {
