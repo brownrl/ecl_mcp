@@ -20,6 +20,7 @@ export function getCompleteExample(db, component, options = {}) {
     const { exampleType, variant } = options;
     
     // Find component examples
+    // NOTE: p.component_name is actually the CATEGORY, p.title is the actual component name
     const query = `
       SELECT 
         ce.id,
@@ -33,13 +34,14 @@ export function getCompleteExample(db, component, options = {}) {
         ece.requires_data,
         ece.interactive,
         ece.accessibility_notes,
-        p.component_name,
+        p.title as component_name,
+        p.component_name as category,
         p.url,
         p.category
       FROM code_examples ce
       JOIN pages p ON ce.page_id = p.id
       LEFT JOIN enhanced_code_examples ece ON ce.id = ece.example_id
-      WHERE LOWER(p.component_name) = LOWER(?)
+      WHERE LOWER(p.title) = LOWER(?)
       ORDER BY 
         CASE 
           WHEN ece.complexity = 'simple' THEN 1

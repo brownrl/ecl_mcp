@@ -1126,18 +1126,60 @@ const readyToDeploy =
 
 ## Typography Best Practices
 
-### Critical: ECL Font Inheritance Issue
+### 🚨 CRITICAL: ECL Design System Font Gap
 
-**Problem:** ECL CSS defines `--ecl-font-family-default: arial, sans-serif` but **does NOT automatically apply it** to all elements. Without proper setup, text will display in browser default fonts (typically Times New Roman).
+**DESIGN SYSTEM BUG**: The ECL design system has a fundamental flaw - `ecl-reset.css` (based on normalize.css) **does NOT set a base `font-family` on `html` or `body` elements**. This is an oversight in the ECL design system itself, not a developer mistake.
 
-**Solution:** Use one of these approaches:
+**Impact:**
+- Pages default to **Times New Roman** instead of Arial
+- Typography utilities (`ecl-u-type-heading-2`) only set font size/weight/line-height
+- Typography utilities **DO NOT set font-family** (they use `font` shorthand without font-family component)
+- Developers must manually add font-family to every page
 
-#### Approach 1: Container-Level Font (Recommended)
-Set `font-family: arial, sans-serif` on your main container element:
+**What SHOULD Be in ECL (but isn't):**
+```css
+/* This is MISSING from ecl-reset.css */
+html {
+  font-family: Arial, sans-serif;
+}
+```
+
+### Required Workarounds
+
+Since ECL doesn't set base font-family, you MUST use one of these approaches:
+
+#### Approach 1: HTML-Level Font (Most Reliable)
+
+Add this to your `<head>` section:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Page Title</title>
+  
+  <!-- ECL CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@ecl/preset-ec@4.11.1/dist/styles/ecl-ec.css">
+  
+  <!-- REQUIRED: Fix ECL's missing base font-family -->
+  <style>
+    html {
+      font-family: Arial, sans-serif !important;
+    }
+  </style>
+</head>
+```
+
+**Why `!important`?** Ensures this overrides any conflicting styles.
+
+#### Approach 2: Container-Level Font
+
+Set `font-family` on your main container element:
 
 ```html
 <body>
-  <main class="ecl-container" style="font-family: arial, sans-serif">
+  <main class="ecl-container" style="font-family: Arial, sans-serif">
     <h1>This will be Arial</h1>
     <p>All text inherits Arial from container</p>
   </main>
@@ -1150,7 +1192,11 @@ Set `font-family: arial, sans-serif` on your main container element:
 - Ensures consistent font inheritance
 - Works with or without ECL utility classes
 
-#### Approach 2: ECL Typography Utility Classes
+**Disadvantages:**
+- Doesn't affect site-header or site-footer unless they're inside the container
+
+#### Approach 3: ECL Typography Utility Classes (Incomplete Solution)
+
 Add ECL typography classes to each text element:
 
 ```html
@@ -1163,6 +1209,8 @@ Add ECL typography classes to each text element:
 - Proper font, size, line-height, and spacing
 - Follows ECL design system exactly
 - Includes responsive typography
+
+**⚠️ WARNING:** ECL typography utilities use the `font` CSS shorthand which only sets size/weight/line-height. They **do NOT include font-family**. You still need Approach 1 or 2!
 
 **Available Classes:**
 - Headings: `ecl-u-type-heading-1` through `ecl-u-type-heading-6`
