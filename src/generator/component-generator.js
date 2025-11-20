@@ -39,11 +39,15 @@ export function generateComponent(db, component, options = {}) {
       ? generated
       : convertToFramework(generated, component, framework);
 
+    // Get critical ECL warnings
+    const eclWarnings = getECLCriticalWarnings(generated, component);
+
     return {
       success: true,
       component,
       framework,
       generated_code: code,
+      critical_warnings: eclWarnings,
       usage_instructions: instructions,
       accessibility_notes: accessibilityNotes,
       next_steps: generateNextSteps(component, customization)
@@ -493,4 +497,128 @@ function convertToFramework(code, component, framework) {
     html: code.html,
     note: `Framework conversion to ${framework} is not yet implemented. Use vanilla HTML/JS code.`
   };
+}
+
+/**
+ * Get critical ECL warnings for generated code
+ * @param {Object} code - Generated code
+ * @param {string} component - Component name
+ * @returns {Array<Object>} Critical warnings
+ */
+function getECLCriticalWarnings(code, component) {
+  const warnings = [];
+
+  // Typography utility-first warning (CRITICAL)
+  const hasTextElements = code.html && (
+    code.html.includes('<p') ||
+    code.html.includes('<h1') ||
+    code.html.includes('<h2') ||
+    code.html.includes('<h3') ||
+    code.html.includes('<h4') ||
+    code.html.includes('<h5') ||
+    code.html.includes('<h6')
+  );
+
+  if (hasTextElements || component.toLowerCase().includes('text') || component.toLowerCase().includes('paragraph')) {
+    warnings.push({
+      severity: 'CRITICAL',
+      category: 'Typography',
+      title: '⚠️ ECL Uses Utility-First Typography',
+      message: 'ECL does NOT apply global font styles. You MUST add typography utility classes to every text element or they will render in browser defaults (often Times New Roman).',
+      required_action: [
+        'Add ecl-u-type-paragraph class to all <p> tags',
+        'Add ecl-u-type-heading-1 through ecl-u-type-heading-6 to heading elements',
+        'Use ecl-u-type-paragraph-lead for introductory/lead paragraphs',
+        'Never leave text elements without ECL typography classes'
+      ],
+      example_wrong: '<p>This will render in Times New Roman ❌</p>',
+      example_correct: '<p class="ecl-u-type-paragraph">This will render in ECL Arial ✅</p>',
+      why_this_matters: 'Unlike Bootstrap or Tailwind, ECL does not provide global CSS resets. Each text element needs explicit utility classes for proper styling.',
+      related_resource: 'Use ecl_get_resources with type="typography" for complete typography guide'
+    });
+  }
+
+  // Form helper text positioning warning
+  if (component.toLowerCase().includes('form') ||
+    component.toLowerCase().includes('input') ||
+    component.toLowerCase().includes('select') ||
+    component.toLowerCase().includes('textarea')) {
+    warnings.push({
+      severity: 'HIGH',
+      category: 'Form Structure',
+      title: 'Helper Text Positioning in ECL Forms',
+      message: 'ECL requires helper text to be positioned BETWEEN the label and input, not after the input.',
+      required_structure: [
+        '1. <label> with form-label class',
+        '2. <div> with ecl-help-block class (helper text)',
+        '3. <input> with ecl-text-input class'
+      ],
+      example: `<div class="ecl-form-group">
+  <label for="input-id" class="ecl-form-label">Label</label>
+  <div class="ecl-help-block" id="input-id-helper">Helper text here</div>
+  <input id="input-id" class="ecl-text-input ecl-text-input--m" 
+         aria-describedby="input-id-helper">
+</div>`,
+      note: 'This is different from most form libraries that put helper text after the input.'
+    });
+  }
+
+  // Auto-initialization warning for JS components
+  if (code.html && code.html.includes('data-ecl-auto-init')) {
+    warnings.push({
+      severity: 'HIGH',
+      category: 'JavaScript',
+      title: 'JavaScript Auto-Initialization Required',
+      message: 'This component requires JavaScript initialization to function properly.',
+      required_steps: [
+        '1. Include ECL JavaScript: <script src="https://cdn.jsdelivr.net/npm/@ecl/preset-ec@4.11.0/dist/scripts/ecl-ec.js"></script>',
+        '2. Call ECL.autoInit() after DOM is loaded:',
+        '   <script>',
+        '     document.addEventListener(\'DOMContentLoaded\', function() {',
+        '       ECL.autoInit();',
+        '     });',
+        '   </script>'
+      ],
+      note: 'Without initialization, interactive features (accordions, dropdowns, etc.) will not work.'
+    });
+  }
+
+  // Icon accessibility warning
+  if (code.html && code.html.includes('<svg') && code.html.includes('ecl-icon')) {
+    warnings.push({
+      severity: 'MEDIUM',
+      category: 'Accessibility',
+      title: 'Icon Accessibility Requirements',
+      message: 'ECL icons require specific accessibility attributes.',
+      required_attributes: [
+        'focusable="false" - Prevents keyboard focus (IE/Edge fix)',
+        'aria-hidden="true" - Hides decorative icons from screen readers'
+      ],
+      example: '<svg class="ecl-icon ecl-icon--xs" focusable="false" aria-hidden="true">',
+      note: 'For icon-only buttons, add aria-label to the button element instead.'
+    });
+  }
+
+  // Select dropdown icon container warning
+  if (component.toLowerCase().includes('select') || component.toLowerCase() === 'dropdown') {
+    warnings.push({
+      severity: 'MEDIUM',
+      category: 'Component Structure',
+      title: 'Select Dropdown Requires Icon Container',
+      message: 'ECL select dropdowns require a wrapper div and separate icon element.',
+      required_structure: [
+        '<div class="ecl-select__container ecl-select__container--m">',
+        '  <select class="ecl-select">...</select>',
+        '  <div class="ecl-select__icon">',
+        '    <svg class="ecl-icon ecl-icon--xs ecl-icon--rotate-180">',
+        '      <use xlink:href="...icons.svg#corner-arrow"></use>',
+        '    </svg>',
+        '  </div>',
+        '</div>'
+      ],
+      note: 'The icon must be rotated 180 degrees to point downward.'
+    });
+  }
+
+  return warnings;
 }

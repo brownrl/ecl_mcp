@@ -6,6 +6,75 @@
 import Database from 'better-sqlite3';
 
 /**
+ * Search synonyms/aliases for common component terms
+ * Maps user queries to actual component names
+ */
+const COMPONENT_SYNONYMS = {
+  // Form input synonyms
+  'text input': ['Text field', 'text field'],
+  'input': ['Text field', 'text field', 'text input'],
+  'textbox': ['Text field', 'text field'],
+  'input field': ['Text field', 'text field'],
+  'input box': ['Text field', 'text field'],
+  'text box': ['Text field', 'text field'],
+  'email input': ['Text field', 'text field'],
+  'number input': ['Text field', 'text field'],
+
+  // Textarea synonyms
+  'textarea': ['Text area', 'text area'],
+  'text area': ['Text area'],
+  'multiline': ['Text area', 'text area'],
+  'multiline input': ['Text area', 'text area'],
+
+  // Select/dropdown synonyms
+  'dropdown': ['Select', 'select'],
+  'select': ['Select'],
+  'select dropdown': ['Select', 'select'],
+  'select box': ['Select', 'select'],
+  'select menu': ['Select', 'select'],
+  'dropdown menu': ['Select', 'select'],
+
+  // Alert/message synonyms
+  'alert': ['Message', 'message', 'Notification', 'notification'],
+  'message': ['Message', 'Notification'],
+  'notification': ['Notification', 'Message'],
+  'toast': ['Message', 'message', 'Notification'],
+
+  // Tag/badge synonyms
+  'badge': ['Tag', 'tag', 'Label', 'label'],
+  'tag': ['Tag', 'Label'],
+  'label': ['Tag', 'tag', 'Label'],
+
+  // Common variations
+  'form field': ['Text field', 'text field', 'Select', 'select', 'Text area'],
+  'form input': ['Text field', 'text field', 'Select', 'select', 'Text area']
+};
+
+/**
+ * Expand query with synonyms
+ * @param {string} query - Original search query
+ * @returns {Array<string>} - Array of queries including synonyms
+ */
+function expandQueryWithSynonyms(query) {
+  const queries = [query]; // Always include original query
+  const queryLower = query.toLowerCase().trim();
+
+  // Check for exact synonym match
+  if (COMPONENT_SYNONYMS[queryLower]) {
+    queries.push(...COMPONENT_SYNONYMS[queryLower]);
+  }
+
+  // Check for partial matches (multi-word queries)
+  Object.entries(COMPONENT_SYNONYMS).forEach(([synonym, expansions]) => {
+    if (queryLower.includes(synonym) || synonym.includes(queryLower)) {
+      queries.push(...expansions);
+    }
+  });
+
+  return [...new Set(queries)]; // Remove duplicates
+}
+
+/**
  * Search components with multiple filters
  * @param {Object} params - Search parameters
  * @param {string} params.query - Search query (optional)
@@ -50,26 +119,24 @@ export function searchComponents(db, params = {}) {
 
     // Full-text search if query provided
     if (query && query.trim()) {
-      // Escape FTS special characters and handle hyphens
-      // Replace hyphens with spaces for FTS matching
-      const sanitized = query.trim().replace(/-/g, ' ');
-      // Escape quotes and other FTS special characters
-      const escaped = sanitized.replace(/"/g, '""');
-      // Create FTS query - use quoted phrase for exact matching
-      const ftsQuery = `"${escaped}"`;
+      // Expand query with synonyms
+      const expandedQueries = expandQueryWithSynonyms(query);
 
-      sql += ` AND (
-        p.id IN (
-          SELECT rowid FROM pages_fts 
-          WHERE pages_fts MATCH ?
-        )
-        OR p.title LIKE ?
-        OR cm.component_name LIKE ?
-      )`;
+      // Build OR conditions for all expanded queries
+      const orConditions = [];
 
-      queryParams.push(ftsQuery);
-      queryParams.push(`%${query.trim()}%`);
-      queryParams.push(`%${query.trim()}%`);
+      expandedQueries.forEach(expandedQuery => {
+        orConditions.push(`p.title LIKE ?`);
+        queryParams.push(`%${expandedQuery.trim()}%`);
+
+        orConditions.push(`cm.component_name LIKE ?`);
+        queryParams.push(`%${expandedQuery.trim()}%`);
+
+        orConditions.push(`ct.tag LIKE ?`);
+        queryParams.push(`%${expandedQuery.trim()}%`);
+      });
+
+      sql += ` AND (${orConditions.join(' OR ')})`;
     }
 
     // Filter by category
@@ -115,6 +182,8 @@ export function searchComponents(db, params = {}) {
 
     // Enhance results with additional metadata and calculate score
     const searchTerms = query ? query.toLowerCase().split(/\s+/).filter(t => t.length > 0) : [];
+    const expandedQueries = query ? expandQueryWithSynonyms(query) : [];
+    const allSearchTerms = [...new Set([...searchTerms, ...expandedQueries.flatMap(eq => eq.toLowerCase().split(/\s+/))])];
 
     let enhanced = results.map(row => {
       const item = {
@@ -137,35 +206,66 @@ export function searchComponents(db, params = {}) {
         const nameLower = (item.component_name || '').toLowerCase();
         const queryLower = query.toLowerCase();
 
-        // 1. Exact full phrase match (Highest)
-        if (titleLower === queryLower || nameLower === queryLower) score += 100;
+        // Check against all expanded queries for exact matches
+        expandedQueries.forEach(expandedQuery => {
+          const expLower = expandedQuery.toLowerCase();
+          
+          // 1. Exact full phrase match (Highest)
+          if (titleLower === expLower || nameLower === expLower) score += 1000;
 
-        // 2. Starts with query
-        else if (titleLower.startsWith(queryLower) || nameLower.startsWith(queryLower)) score += 80;
+          // 2. Starts with query
+          else if (titleLower.startsWith(expLower) || nameLower.startsWith(expLower)) score += 800;
 
-        // 3. Contains full query phrase
-        else if (titleLower.includes(queryLower) || nameLower.includes(queryLower)) score += 60;
+          // 3. Contains full query phrase
+          else if (titleLower.includes(expLower) || nameLower.includes(expLower)) score += 600;
+        });
 
         // 4. Word overlap (High value per word)
         let matchedWords = 0;
-        searchTerms.forEach(term => {
-          if (titleLower.includes(term) || nameLower.includes(term)) {
+        let titleMatchedWords = 0;
+        let nameMatchedWords = 0;
+        
+        allSearchTerms.forEach(term => {
+          if (!term || term.length < 2) return; // Skip very short terms
+          
+          const inTitle = titleLower.includes(term);
+          const inName = nameLower.includes(term);
+          
+          if (inTitle || inName) {
             matchedWords++;
-            score += 10; // Base points for word match
+            if (inTitle) titleMatchedWords++;
+            if (inName) nameMatchedWords++;
+            
+            score += 100; // Base points for word match
 
+            // Bonus for exact word match (not partial)
+            const titleWords = titleLower.split(/\s+/);
+            const nameWords = nameLower.split(/\s+/);
+            
+            if (titleWords.includes(term)) score += 50;
+            if (nameWords.includes(term)) score += 50;
+            
             // Bonus for starting with the word
-            if (titleLower.split(/\s+/).some(w => w.startsWith(term))) score += 5;
+            if (titleWords.some(w => w.startsWith(term))) score += 25;
+            if (nameWords.some(w => w.startsWith(term))) score += 25;
           }
         });
 
-        // Bonus for matching all words
-        if (matchedWords === searchTerms.length && searchTerms.length > 1) score += 20;
+        // Major bonus for matching all words from original query
+        if (matchedWords >= searchTerms.length && searchTerms.length > 0) score += 200;
+
+        // Bonus for title/component_name having more word matches than tags
+        score += (titleMatchedWords * 30);
+        score += (nameMatchedWords * 30);
 
         // 5. Category match (Low)
-        if (item.category && item.category.toLowerCase().includes(queryLower)) score += 5;
+        if (item.category && item.category.toLowerCase().includes(queryLower)) score += 10;
 
-        // 6. Tag match (Low)
-        if (item.tags.some(t => t.toLowerCase().includes(queryLower))) score += 5;
+        // 6. Tag match (Lower priority to avoid false positives)
+        const tagMatches = item.tags.filter(t => 
+          allSearchTerms.some(term => t.toLowerCase().includes(term))
+        ).length;
+        score += (tagMatches * 5); // Much lower than title/name matches
       }
 
       return { ...item, score };

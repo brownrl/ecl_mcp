@@ -12,21 +12,27 @@
 const ECL_ICONS = {
     // UI Icons
     ui: [
-        { id: 'corner-arrow', name: 'Corner Arrow', description: 'Navigation arrow, commonly rotated for different directions' },
-        { id: 'close', name: 'Close', description: 'Close button, dismiss action' },
-        { id: 'more', name: 'More', description: 'More options menu' },
-        { id: 'check', name: 'Check', description: 'Confirmation, success state' },
-        { id: 'error', name: 'Error', description: 'Error indicator' },
-        { id: 'warning', name: 'Warning', description: 'Warning indicator' },
-        { id: 'info', name: 'Info', description: 'Information indicator' },
-        { id: 'success', name: 'Success', description: 'Success indicator' },
-        { id: 'external-link', name: 'External Link', description: 'Link opens in new window' },
-        { id: 'print', name: 'Print', description: 'Print action' },
-        { id: 'edit', name: 'Edit', description: 'Edit action' },
-        { id: 'delete', name: 'Delete', description: 'Delete action' },
-        { id: 'copy', name: 'Copy', description: 'Copy to clipboard' },
-        { id: 'share', name: 'Share', description: 'Share action' },
-        { id: 'fullscreen', name: 'Fullscreen', description: 'Expand to fullscreen' }
+        { id: 'corner-arrow', name: 'Corner Arrow', description: 'Navigation arrow, commonly rotated for different directions', keywords: ['arrow', 'chevron', 'navigate', 'direction'] },
+        { id: 'close', name: 'Close', description: 'Close button, dismiss action', keywords: ['close', 'dismiss', 'cancel', 'x', 'exit'] },
+        { id: 'more', name: 'More', description: 'More options menu', keywords: ['more', 'options', 'menu', 'dots', 'ellipsis'] },
+        { id: 'check', name: 'Check', description: 'Confirmation, success state', keywords: ['check', 'checkmark', 'tick', 'confirm', 'success', 'done'] },
+        { id: 'error', name: 'Error', description: 'Error indicator', keywords: ['error', 'warning', 'alert', 'x', 'cross'] },
+        { id: 'warning', name: 'Warning', description: 'Warning indicator', keywords: ['warning', 'alert', 'caution', 'attention'] },
+        { id: 'info', name: 'Info', description: 'Information indicator', keywords: ['info', 'information', 'help', 'question'] },
+        { id: 'success', name: 'Success', description: 'Success indicator', keywords: ['success', 'check', 'done', 'complete'] },
+        { id: 'external-link', name: 'External Link', description: 'Link opens in new window', keywords: ['external', 'link', 'new-window', 'open'] },
+        { id: 'print', name: 'Print', description: 'Print action', keywords: ['print', 'printer', 'output'] },
+        { id: 'edit', name: 'Edit', description: 'Edit action', keywords: ['edit', 'pencil', 'modify', 'change'] },
+        { id: 'delete', name: 'Delete', description: 'Delete action', keywords: ['delete', 'remove', 'trash', 'bin'] },
+        { id: 'copy', name: 'Copy', description: 'Copy to clipboard', keywords: ['copy', 'duplicate', 'clipboard'] },
+        { id: 'share', name: 'Share', description: 'Share action', keywords: ['share', 'send', 'forward'] },
+        { id: 'fullscreen', name: 'Fullscreen', description: 'Expand to fullscreen', keywords: ['fullscreen', 'expand', 'maximize'] },
+        { id: 'plus', name: 'Plus', description: 'Add, expand, or positive action', keywords: ['plus', 'add', 'expand', 'increase', 'more', 'create', 'new'] },
+        { id: 'minus', name: 'Minus', description: 'Remove, collapse, or negative action', keywords: ['minus', 'remove', 'collapse', 'decrease', 'less', 'subtract'] },
+        { id: 'chevron-up', name: 'Chevron Up', description: 'Upward arrow or collapse indicator', keywords: ['chevron', 'arrow', 'up', 'collapse'] },
+        { id: 'chevron-down', name: 'Chevron Down', description: 'Downward arrow or expand indicator', keywords: ['chevron', 'arrow', 'down', 'expand'] },
+        { id: 'chevron-left', name: 'Chevron Left', description: 'Left arrow or back navigation', keywords: ['chevron', 'arrow', 'left', 'back', 'previous'] },
+        { id: 'chevron-right', name: 'Chevron Right', description: 'Right arrow or forward navigation', keywords: ['chevron', 'arrow', 'right', 'forward', 'next'] }
     ],
 
     // General Icons
@@ -125,8 +131,9 @@ export function searchIcons(query, options = {}) {
     const startTime = Date.now();
     const { category = null, limit = 20 } = options;
 
-    const searchTerm = query.toLowerCase();
+    const searchTerms = query.toLowerCase().split(/\s+/).filter(t => t.length > 0);
     const results = [];
+    const scored = [];
 
     for (const [cat, icons] of Object.entries(ECL_ICONS)) {
         if (category && cat !== category) {
@@ -134,44 +141,74 @@ export function searchIcons(query, options = {}) {
         }
 
         for (const icon of icons) {
-            const matches =
-                icon.id.toLowerCase().includes(searchTerm) ||
-                icon.name.toLowerCase().includes(searchTerm) ||
-                icon.description.toLowerCase().includes(searchTerm);
+            let score = 0;
+            let matchedTerms = 0;
 
-            if (matches) {
-                results.push({
-                    ...icon,
-                    category: cat,
-                    cdn_path_ec: `https://cdn.jsdelivr.net/npm/@ecl/preset-ec@4.11.0/dist/images/icons/sprites/icons.svg#${cat}--${icon.id}`,
-                    cdn_path_eu: `https://cdn.jsdelivr.net/npm/@ecl/preset-eu@4.11.0/dist/images/icons/sprites/icons.svg#${cat}--${icon.id}`,
-                    usage_example: generateIconUsageExample(cat, icon.id)
+            // Check each search term
+            searchTerms.forEach(term => {
+                const inId = icon.id.toLowerCase().includes(term);
+                const inName = icon.name.toLowerCase().includes(term);
+                const inDesc = icon.description.toLowerCase().includes(term);
+                const inKeywords = icon.keywords?.some(k => k.toLowerCase().includes(term)) || false;
+
+                if (inId) {
+                    score += 100; // Highest priority: ID match
+                    matchedTerms++;
+                } else if (inName) {
+                    score += 80; // High priority: Name match
+                    matchedTerms++;
+                } else if (inKeywords) {
+                    score += 50; // Medium priority: Keyword match
+                    matchedTerms++;
+                } else if (inDesc) {
+                    score += 20; // Low priority: Description match
+                    matchedTerms++;
+                }
+            });
+
+            // Only include if at least one term matched (support multi-keyword)
+            // OR if it's a single term search and it matches
+            const shouldInclude = matchedTerms > 0;
+
+            if (shouldInclude) {
+                scored.push({
+                    icon: {
+                        ...icon,
+                        category: cat,
+                        cdn_path_ec: `https://cdn.jsdelivr.net/npm/@ecl/preset-ec@4.11.0/dist/images/icons/sprites/icons.svg#${cat}--${icon.id}`,
+                        cdn_path_eu: `https://cdn.jsdelivr.net/npm/@ecl/preset-eu@4.11.0/dist/images/icons/sprites/icons.svg#${cat}--${icon.id}`,
+                        usage_example: generateIconUsageExample(cat, icon.id)
+                    },
+                    score,
+                    matchedTerms
                 });
             }
-
-            if (results.length >= limit) {
-                break;
-            }
-        }
-
-        if (results.length >= limit) {
-            break;
         }
     }
+
+    // Sort by score (descending), then by matched terms (descending)
+    scored.sort((a, b) => {
+        if (b.score !== a.score) return b.score - a.score;
+        return b.matchedTerms - a.matchedTerms;
+    });
+
+    // Apply limit and extract icons
+    const limitedResults = scored.slice(0, limit).map(s => s.icon);
 
     return {
         success: true,
         data: {
-            results,
-            count: results.length,
-            query: searchTerm,
+            results: limitedResults,
+            count: limitedResults.length,
+            query: query,
+            search_terms: searchTerms,
             category_filter: category
         },
         metadata: {
             tool: 'ecl_search_icons',
             execution_time_ms: Date.now() - startTime,
             source: 'ecl-static-data',
-            version: '2.0'
+            version: '2.1'
         }
     };
 }

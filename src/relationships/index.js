@@ -2,7 +2,7 @@
  * Relationships Module - Component tag searching
  */
 
-export { 
+export {
   findComponentsByTag,
   getAvailableTags,
   findSimilarComponents

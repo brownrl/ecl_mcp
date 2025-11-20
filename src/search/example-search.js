@@ -37,30 +37,30 @@ function levenshteinDistance(str1, str2) {
 function fuzzyMatchScore(query, target) {
   const queryLower = query.toLowerCase();
   const targetLower = target.toLowerCase();
-  
+
   // Exact match
   if (queryLower === targetLower) return 100;
-  
+
   // Starts with
   if (targetLower.startsWith(queryLower)) return 90;
-  
+
   // Contains
   if (targetLower.includes(queryLower)) return 80;
-  
+
   // Calculate Levenshtein distance
   const distance = levenshteinDistance(queryLower, targetLower);
   const maxLen = Math.max(queryLower.length, targetLower.length);
-  
+
   // If distance is very small relative to length, it's likely a typo
   if (distance <= 2 && maxLen > 3) {
     return 70 - (distance * 10);
   }
-  
+
   // Check word-level matching
   const queryWords = queryLower.split(/\s+/);
   const targetWords = targetLower.split(/\s+/);
   let wordMatches = 0;
-  
+
   for (const qWord of queryWords) {
     for (const tWord of targetWords) {
       const dist = levenshteinDistance(qWord, tWord);
@@ -73,7 +73,7 @@ function fuzzyMatchScore(query, target) {
       }
     }
   }
-  
+
   return Math.min(wordMatches, 65);
 }
 
@@ -161,7 +161,7 @@ export function searchExamples(db, params = {}) {
         p.title,
         ce.language
     `;
-    
+
     // Don't limit in SQL if we're doing fuzzy search - we need all results to score
     if (!doingFuzzySearch) {
       sql += ` LIMIT ?`;
@@ -226,7 +226,7 @@ export function searchExamples(db, params = {}) {
     let suggestions = null;
     if (formatted.length === 0 && searchTerm) {
       suggestions = [];
-      
+
       // Get all unique component names for suggestion matching
       const allComponents = db.prepare(`
         SELECT DISTINCT p.title, cm.component_name
@@ -234,7 +234,7 @@ export function searchExamples(db, params = {}) {
         LEFT JOIN component_metadata cm ON p.id = cm.page_id
         WHERE p.category IN ('forms', 'navigation', 'content', 'media', 'banners', 'site-wide')
       `).all();
-      
+
       // Find close matches
       const closeMatches = [];
       for (const comp of allComponents) {
@@ -244,15 +244,15 @@ export function searchExamples(db, params = {}) {
           closeMatches.push({ name: title, score });
         }
       }
-      
+
       // Sort by score and take top 3
       closeMatches.sort((a, b) => b.score - a.score);
       const topMatches = closeMatches.slice(0, 3);
-      
+
       if (topMatches.length > 0) {
         suggestions.push(`Did you mean: ${topMatches.map(m => `"${m.name}"`).join(', ')}?`);
       }
-      
+
       suggestions.push('Try broader terms like "form", "navigation", or "button"');
       suggestions.push('Use ecl_search with type="component" to browse all available components');
     }
