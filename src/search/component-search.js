@@ -236,13 +236,17 @@ export function getComponentDetails(db, identifier) {
         WHERE p.id = ?
       `).get(identifier);
     } else {
+      // Normalize the search term: lowercase, remove spaces and hyphens
+      const normalized = identifier.toLowerCase().replace(/[\s-]/g, '');
+
       component = db.prepare(`
         SELECT p.*, cm.*
         FROM pages p
         LEFT JOIN component_metadata cm ON p.id = cm.page_id
-        WHERE cm.component_name LIKE ? OR p.title LIKE ?
+        WHERE REPLACE(REPLACE(LOWER(cm.component_name), ' ', ''), '-', '') LIKE '%' || ? || '%'
+           OR REPLACE(REPLACE(LOWER(p.title), ' ', ''), '-', '') LIKE '%' || ? || '%'
         LIMIT 1
-      `).get(`%${identifier}%`, `%${identifier}%`);
+      `).get(normalized, normalized);
     }
 
     if (!component) {

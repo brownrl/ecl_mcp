@@ -226,12 +226,16 @@ export function getComponentExamples(db, componentIdentifier) {
     if (typeof componentIdentifier === 'number' || /^\d+$/.test(componentIdentifier)) {
       pageId = parseInt(componentIdentifier);
     } else {
+      // Normalize the search term: lowercase, remove spaces and hyphens
+      const normalized = componentIdentifier.toLowerCase().replace(/[\s-]/g, '');
+
       const page = db.prepare(`
         SELECT p.id FROM pages p
         LEFT JOIN component_metadata cm ON p.id = cm.page_id
-        WHERE cm.component_name LIKE ? OR p.title LIKE ?
+        WHERE REPLACE(REPLACE(LOWER(cm.component_name), ' ', ''), '-', '') LIKE '%' || ? || '%'
+           OR REPLACE(REPLACE(LOWER(p.title), ' ', ''), '-', '') LIKE '%' || ? || '%'
         LIMIT 1
-      `).get(`%${componentIdentifier}%`, `%${componentIdentifier}%`);
+      `).get(normalized, normalized);
 
       if (!page) {
         return {
