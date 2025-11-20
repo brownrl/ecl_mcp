@@ -11,6 +11,11 @@ import {
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { getDatabase, closeDatabase } from './src/db.js';
+import * as Search from './src/search/index.js';
+import * as Validation from './src/validation/index.js';
+import * as Generator from './src/generator/index.js';
+import * as Relationships from './src/relationships/index.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -181,9 +186,10 @@ server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
 server.setRequestHandler(ListToolsRequestSchema, async () => {
   return {
     tools: [
+      // ===== LEGACY TOOLS (Phase 1 - for backward compatibility) =====
       {
         name: 'get_component',
-        description: 'Get detailed information about a specific ECL component including usage, examples, and documentation',
+        description: '[LEGACY] Get basic component info from JSON. Use ecl_get_component_details for complete information.',
         inputSchema: {
           type: 'object',
           properties: {
@@ -197,7 +203,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: 'search_components',
-        description: 'Search for ECL components by category, name, or keyword',
+        description: '[LEGACY] Basic component search. Use ecl_search_components for advanced filtering.',
         inputSchema: {
           type: 'object',
           properties: {
@@ -207,6 +213,301 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             },
           },
           required: ['query'],
+        },
+      },
+      
+      // ===== ENHANCED COMPONENT SEARCH (Phase 3) =====
+      {
+        name: 'ecl_search_components',
+        description: 'Advanced component search with filters (category, tags, complexity, JS requirements). Returns structured metadata.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            query: {
+              type: 'string',
+              description: 'Search query (component name, description keyword)',
+            },
+            category: {
+              type: 'string',
+              description: 'Filter by category (e.g., "forms", "navigation", "content")',
+            },
+            tag: {
+              type: 'string',
+              description: 'Filter by tag (e.g., "interactive", "form-control", "responsive")',
+            },
+            complexity: {
+              type: 'string',
+              enum: ['basic', 'intermediate', 'advanced'],
+              description: 'Filter by complexity level',
+            },
+            requiresJs: {
+              type: 'boolean',
+              description: 'Filter components that require/don\'t require JavaScript',
+            },
+            limit: {
+              type: 'number',
+              description: 'Max results (default: 20)',
+            },
+          },
+        },
+      },
+      {
+        name: 'ecl_get_component_details',
+        description: 'Get complete component information including metadata, tags, guidance (do/don\'t), API docs, and code examples.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            component: {
+              type: 'string',
+              description: 'Component name or page ID',
+            },
+          },
+          required: ['component'],
+        },
+      },
+      
+      // ===== API DOCUMENTATION SEARCH (Phase 3) =====
+      {
+        name: 'ecl_search_api',
+        description: 'Search component API documentation (attributes, props, methods, events, slots, CSS variables).',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            query: {
+              type: 'string',
+              description: 'Search query (API name, description keyword)',
+            },
+            apiType: {
+              type: 'string',
+              enum: ['attribute', 'prop', 'method', 'event', 'slot', 'css-variable'],
+              description: 'Filter by API type',
+            },
+            required: {
+              type: 'boolean',
+              description: 'Filter by required/optional status',
+            },
+            limit: {
+              type: 'number',
+              description: 'Max results (default: 50)',
+            },
+          },
+        },
+      },
+      {
+        name: 'ecl_get_component_api',
+        description: 'Get all API documentation for a specific component (all attributes, props, methods, events).',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            component: {
+              type: 'string',
+              description: 'Component name or page ID',
+            },
+          },
+          required: ['component'],
+        },
+      },
+      
+      // ===== CODE EXAMPLE SEARCH (Phase 3) =====
+      {
+        name: 'ecl_search_code_examples',
+        description: 'Search code examples by component, language, complexity, or completeness.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            component: {
+              type: 'string',
+              description: 'Filter by component name',
+            },
+            language: {
+              type: 'string',
+              enum: ['html', 'javascript', 'css', 'jsx', 'vue', 'twig'],
+              description: 'Filter by programming language',
+            },
+            complexity: {
+              type: 'string',
+              enum: ['basic', 'intermediate', 'advanced'],
+              description: 'Filter by complexity level',
+            },
+            completeExample: {
+              type: 'boolean',
+              description: 'Filter by complete vs snippet examples',
+            },
+            interactive: {
+              type: 'boolean',
+              description: 'Filter by interactive examples',
+            },
+            limit: {
+              type: 'number',
+              description: 'Max results (default: 30)',
+            },
+          },
+        },
+      },
+      {
+        name: 'ecl_get_example',
+        description: 'Get complete code for a specific example by ID.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            exampleId: {
+              type: 'number',
+              description: 'Example ID from code_examples table',
+            },
+          },
+          required: ['exampleId'],
+        },
+      },
+      {
+        name: 'ecl_get_component_examples',
+        description: 'Get all code examples for a specific component.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            component: {
+              type: 'string',
+              description: 'Component name or page ID',
+            },
+          },
+          required: ['component'],
+        },
+      },
+      
+      // ===== USAGE GUIDANCE (Phase 3) =====
+      {
+        name: 'ecl_get_component_guidance',
+        description: 'Get usage guidance for a component (when to use, when not to use, do\'s, don\'ts, best practices, caveats).',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            component: {
+              type: 'string',
+              description: 'Component name or page ID',
+            },
+          },
+          required: ['component'],
+        },
+      },
+      {
+        name: 'ecl_search_guidance',
+        description: 'Search guidance content across all components by keyword.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            query: {
+              type: 'string',
+              description: 'Search query (guidance content keyword)',
+            },
+            guidanceType: {
+              type: 'string',
+              enum: ['when-to-use', 'when-not-to-use', 'do', 'dont', 'best-practice', 'caveat', 'limitation', 'note'],
+              description: 'Filter by guidance type',
+            },
+            limit: {
+              type: 'number',
+              description: 'Max results (default: 30)',
+            },
+          },
+        },
+      },
+      
+      // ===== COMPONENT RELATIONSHIPS (Phase 3) =====
+      {
+        name: 'ecl_find_related_components',
+        description: 'Find components related to a given component (requires, suggests, alternatives, contains, conflicts).',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            component: {
+              type: 'string',
+              description: 'Component name or page ID',
+            },
+            relationshipType: {
+              type: 'string',
+              enum: ['requires', 'suggests', 'alternative', 'contains', 'conflicts', 'extends'],
+              description: 'Filter by relationship type',
+            },
+          },
+          required: ['component'],
+        },
+      },
+      {
+        name: 'ecl_get_dependency_graph',
+        description: 'Build recursive dependency graph for a component (what it requires and what requires it).',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            component: {
+              type: 'string',
+              description: 'Component name or page ID',
+            },
+            maxDepth: {
+              type: 'number',
+              description: 'Maximum recursion depth (default: 3)',
+            },
+          },
+          required: ['component'],
+        },
+      },
+      
+      // ===== DESIGN TOKENS (Phase 3) =====
+      {
+        name: 'ecl_search_design_tokens',
+        description: 'Search design tokens (colors, spacing, typography, breakpoints, etc.) by name or category.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            query: {
+              type: 'string',
+              description: 'Search query (token name, CSS variable, or value)',
+            },
+            category: {
+              type: 'string',
+              enum: ['color', 'spacing', 'typography', 'breakpoint', 'shadow', 'border-radius', 'z-index', 'timing'],
+              description: 'Filter by token category',
+            },
+            limit: {
+              type: 'number',
+              description: 'Max results (default: 50)',
+            },
+          },
+        },
+      },
+      {
+        name: 'ecl_get_tokens_by_category',
+        description: 'Get all design tokens for a specific category.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            category: {
+              type: 'string',
+              enum: ['color', 'spacing', 'typography', 'breakpoint', 'shadow', 'border-radius', 'z-index', 'timing'],
+              description: 'Token category',
+            },
+          },
+          required: ['category'],
+        },
+      },
+      {
+        name: 'ecl_get_token',
+        description: 'Get a specific design token by exact name or CSS variable.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            tokenName: {
+              type: 'string',
+              description: 'Token name or CSS variable (e.g., "primary-color" or "--ecl-color-primary")',
+            },
+          },
+          required: ['tokenName'],
+        },
+      },
+      {
+        name: 'ecl_get_token_categories',
+        description: 'List all design token categories with counts.',
+        inputSchema: {
+          type: 'object',
+          properties: {},
         },
       },
       {
@@ -285,6 +586,345 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           },
         },
       },
+      
+      // ===== VALIDATION & DIAGNOSTICS (Phase 4) =====
+      {
+        name: 'ecl_validate_component_usage',
+        description: 'Validate ECL component HTML/JS code against requirements. Checks structure, attributes, accessibility, best practices, and returns quality score.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            component: {
+              type: 'string',
+              description: 'Component name to validate',
+            },
+            html_code: {
+              type: 'string',
+              description: 'HTML code to validate',
+            },
+            js_code: {
+              type: 'string',
+              description: 'Optional JavaScript code to validate',
+            },
+            context: {
+              type: 'string',
+              description: 'Optional usage context for contextual validation',
+            },
+          },
+          required: ['component', 'html_code'],
+        },
+      },
+      {
+        name: 'ecl_check_accessibility',
+        description: 'Check HTML code for WCAG 2.1 accessibility compliance (Level A, AA, AAA). Validates ARIA, keyboard access, contrast, focus, and component-specific requirements.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            html_code: {
+              type: 'string',
+              description: 'HTML code to check for accessibility',
+            },
+            component: {
+              type: 'string',
+              description: 'Optional component name for component-specific checks',
+            },
+            wcag_level: {
+              type: 'string',
+              enum: ['A', 'AA', 'AAA'],
+              description: 'Target WCAG level (default: AA)',
+            },
+          },
+          required: ['html_code'],
+        },
+      },
+      {
+        name: 'ecl_analyze_ecl_code',
+        description: 'Analyze ECL code for components, design tokens, best practices, and maintainability. Returns quality score and recommendations.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            html_code: {
+              type: 'string',
+              description: 'HTML code to analyze',
+            },
+            js_code: {
+              type: 'string',
+              description: 'Optional JavaScript code to analyze',
+            },
+            css_code: {
+              type: 'string',
+              description: 'Optional CSS code to analyze',
+            },
+          },
+          required: ['html_code'],
+        },
+      },
+      {
+        name: 'ecl_check_conflicts',
+        description: 'Check for conflicts or compatibility issues between ECL components. Identifies z-index conflicts, nesting issues, and incompatible combinations.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            components: {
+              type: 'array',
+              items: {
+                type: 'string',
+              },
+              description: 'Array of component names to check for conflicts',
+            },
+            context: {
+              type: 'string',
+              description: 'Optional usage context',
+            },
+          },
+          required: ['components'],
+        },
+      },
+      
+      // ===== CODE GENERATION (Phase 5) =====
+      {
+        name: 'ecl_get_complete_example',
+        description: 'Get a complete, runnable example for a component with all dependencies (HTML/CSS/JS). Returns full working code with CDN links, initialization scripts, and customization guide.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            component: {
+              type: 'string',
+              description: 'Component name',
+            },
+            example_type: {
+              type: 'string',
+              description: 'Type of example (basic/advanced/interactive)',
+            },
+            variant: {
+              type: 'string',
+              description: 'Component variant (e.g., primary/secondary)',
+            },
+          },
+          required: ['component'],
+        },
+      },
+      {
+        name: 'ecl_generate_component',
+        description: 'Generate customized ECL component code with options. Applies variants, sizes, content, attributes, and ensures accessibility compliance.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            component: {
+              type: 'string',
+              description: 'Component name to generate',
+            },
+            customization: {
+              type: 'object',
+              description: 'Customization options (variant, size, color, content, attributes)',
+            },
+            framework: {
+              type: 'string',
+              enum: ['vanilla', 'react', 'vue'],
+              description: 'Target framework (default: vanilla)',
+            },
+            include_comments: {
+              type: 'boolean',
+              description: 'Include explanatory comments in generated code',
+            },
+          },
+          required: ['component'],
+        },
+      },
+      {
+        name: 'ecl_create_playground',
+        description: 'Create a standalone HTML playground file with multiple ECL components for testing. Returns complete HTML file with navigation, examples, and code viewers.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            components: {
+              type: 'array',
+              items: {
+                type: 'string',
+              },
+              description: 'Array of component names to include in playground',
+            },
+            custom_code: {
+              type: 'string',
+              description: 'Optional custom HTML code to include',
+            },
+            include_all_variants: {
+              type: 'boolean',
+              description: 'Include all variants of each component (default: false)',
+            },
+          },
+          required: ['components'],
+        },
+      },
+      
+      // ===== RELATIONSHIPS & DEPENDENCIES (Phase 6) =====
+      {
+        name: 'ecl_find_components_by_tag',
+        description: 'Find components by tags (feature, category, accessibility, interaction). Supports searching with multiple tags and different match modes.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            tags: {
+              oneOf: [
+                { type: 'string' },
+                { 
+                  type: 'array',
+                  items: { type: 'string' }
+                }
+              ],
+              description: 'Single tag or array of tags to search for',
+            },
+            tag_type: {
+              type: 'string',
+              description: 'Filter by tag type: feature, category, accessibility, interaction',
+            },
+            match_mode: {
+              type: 'string',
+              description: 'Match mode: "any" (default) or "all" for multiple tags',
+            },
+            include_metadata: {
+              type: 'boolean',
+              description: 'Include component metadata (default: true)',
+            },
+          },
+          required: ['tags'],
+        },
+      },
+      {
+        name: 'ecl_get_available_tags',
+        description: 'Get all available tags for categorizing and discovering components. Returns tags grouped by type with usage counts.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            tag_type: {
+              type: 'string',
+              description: 'Filter by tag type: feature, category, accessibility, interaction',
+            },
+            include_counts: {
+              type: 'boolean',
+              description: 'Include component counts per tag (default: true)',
+            },
+          },
+        },
+      },
+      {
+        name: 'ecl_find_similar_components',
+        description: 'Find components similar to a given component based on shared tags. Returns similarity scores and shared features.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            component: {
+              type: 'string',
+              description: 'Component name to find similar components for',
+            },
+            min_shared_tags: {
+              type: 'number',
+              description: 'Minimum shared tags required (default: 2)',
+            },
+            limit: {
+              type: 'number',
+              description: 'Maximum results to return (default: 10)',
+            },
+          },
+          required: ['component'],
+        },
+      },
+      {
+        name: 'ecl_analyze_dependencies',
+        description: 'Analyze component dependencies including required ECL assets, JavaScript needs, other components, and accessibility requirements.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            component: {
+              type: 'string',
+              description: 'Component name to analyze',
+            },
+            include_suggestions: {
+              type: 'boolean',
+              description: 'Include suggested components (default: true)',
+            },
+            include_conflicts: {
+              type: 'boolean',
+              description: 'Include conflicting components (default: true)',
+            },
+            recursive: {
+              type: 'boolean',
+              description: 'Follow full dependency chain (default: false)',
+            },
+          },
+          required: ['component'],
+        },
+      },
+      {
+        name: 'ecl_build_relationship_graph',
+        description: 'Build a visualizable graph of component relationships. Returns graph data in Cytoscape, D3, or Mermaid format.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            components: {
+              type: 'array',
+              items: {
+                type: 'string',
+              },
+              description: 'Specific components to include (null = all)',
+            },
+            relationship_types: {
+              type: 'array',
+              items: {
+                type: 'string',
+              },
+              description: 'Types to include: requires, suggests, contains, alternative',
+            },
+            max_depth: {
+              type: 'number',
+              description: 'Maximum relationship depth (default: 2)',
+            },
+            format: {
+              type: 'string',
+              description: 'Output format: cytoscape (default), d3, mermaid',
+            },
+          },
+        },
+      },
+      {
+        name: 'ecl_analyze_conflicts',
+        description: 'Analyze potential conflicts between multiple components. Returns conflicts, warnings, risk scores, and recommendations.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            components: {
+              type: 'array',
+              items: {
+                type: 'string',
+              },
+              description: 'Array of component names to check for conflicts (minimum 2)',
+            },
+            include_warnings: {
+              type: 'boolean',
+              description: 'Include warning-level conflicts (default: true)',
+            },
+            include_recommendations: {
+              type: 'boolean',
+              description: 'Include recommendations (default: true)',
+            },
+          },
+          required: ['components'],
+        },
+      },
+      {
+        name: 'ecl_suggest_alternatives',
+        description: 'Suggest alternative components based on feature similarity. Useful when a component conflicts or doesn\'t fit requirements.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            component: {
+              type: 'string',
+              description: 'Component name to find alternatives for',
+            },
+          },
+          required: ['component'],
+        },
+      },
     ],
   };
 });
@@ -292,8 +932,15 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 // Handle tool calls
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args } = request.params;
+  
+  // Database connection for Phase 3 tools
+  let db = null;
 
   try {
+    // Initialize database for Phase 3 tools
+    if (name.startsWith('ecl_')) {
+      db = getDatabase(true); // readonly
+    }
     if (name === 'get_component') {
       const componentName = args.component_name.toLowerCase().replace(/\s+/g, '-');
       const component = eclData.components[componentName];
@@ -694,6 +1341,454 @@ For manual initialization details, check individual component documentation.
       };
     }
 
+    // ===== PHASE 3 ENHANCED SEARCH TOOLS =====
+    
+    // Component Search
+    if (name === 'ecl_search_components') {
+      const result = Search.searchComponents(db, args);
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
+      };
+    }
+    
+    if (name === 'ecl_get_component_details') {
+      const result = Search.getComponentDetails(db, args.component);
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
+      };
+    }
+    
+    // API Search
+    if (name === 'ecl_search_api') {
+      const result = Search.searchAPI(db, args);
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
+      };
+    }
+    
+    if (name === 'ecl_get_component_api') {
+      const result = Search.getComponentAPI(db, args.component);
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
+      };
+    }
+    
+    // Code Example Search
+    if (name === 'ecl_search_code_examples') {
+      const result = Search.searchExamples(db, args);
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
+      };
+    }
+    
+    if (name === 'ecl_get_example') {
+      const result = Search.getExample(db, args.exampleId);
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
+      };
+    }
+    
+    if (name === 'ecl_get_component_examples') {
+      const result = Search.getComponentExamples(db, args.component);
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
+      };
+    }
+    
+    // Guidance Search
+    if (name === 'ecl_get_component_guidance') {
+      const result = Search.getComponentGuidance(db, args.component);
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
+      };
+    }
+    
+    if (name === 'ecl_search_guidance') {
+      const result = Search.searchGuidance(db, args);
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
+      };
+    }
+    
+    // Relationship Search
+    if (name === 'ecl_find_related_components') {
+      const result = Search.findRelatedComponents(db, args.component, args.relationshipType);
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
+      };
+    }
+    
+    if (name === 'ecl_get_dependency_graph') {
+      const result = Search.getDependencyGraph(db, args.component, args.maxDepth);
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
+      };
+    }
+    
+    // Design Token Search
+    if (name === 'ecl_search_design_tokens') {
+      const result = Search.searchDesignTokens(db, args);
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
+      };
+    }
+    
+    if (name === 'ecl_get_tokens_by_category') {
+      const result = Search.getTokensByCategory(db, args.category);
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
+      };
+    }
+    
+    if (name === 'ecl_get_token') {
+      const result = Search.getToken(db, args.tokenName);
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
+      };
+    }
+    
+    if (name === 'ecl_get_token_categories') {
+      const result = Search.getTokenCategories(db);
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
+      };
+    }
+    
+    // Validation & Diagnostics
+    if (name === 'ecl_validate_component_usage') {
+      const result = await Validation.validateComponentUsage(
+        db, 
+        args.component, 
+        args.html_code, 
+        args.js_code, 
+        args.context
+      );
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
+      };
+    }
+    
+    if (name === 'ecl_check_accessibility') {
+      const result = await Validation.checkAccessibility(
+        db, 
+        args.html_code, 
+        args.component, 
+        args.wcag_level
+      );
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
+      };
+    }
+    
+    if (name === 'ecl_analyze_ecl_code') {
+      const result = await Validation.analyzeEclCode(
+        db, 
+        args.html_code, 
+        args.js_code, 
+        args.css_code
+      );
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
+      };
+    }
+    
+    if (name === 'ecl_check_conflicts') {
+      const result = await Validation.checkConflicts(
+        db, 
+        args.components, 
+        args.context
+      );
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
+      };
+    }
+    
+    // Code Generation (Phase 5)
+    if (name === 'ecl_get_complete_example') {
+      const result = Generator.getCompleteExample(
+        db, 
+        args.component, 
+        {
+          exampleType: args.example_type,
+          variant: args.variant
+        }
+      );
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
+      };
+    }
+
+    if (name === 'ecl_generate_component') {
+      const result = Generator.generateComponent(
+        db, 
+        args.component, 
+        {
+          customization: args.customization,
+          framework: args.framework || 'vanilla',
+          includeComments: args.include_comments || false
+        }
+      );
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
+      };
+    }
+
+    if (name === 'ecl_create_playground') {
+      const result = Generator.createPlayground(
+        db, 
+        args.components, 
+        {
+          customCode: args.custom_code,
+          includeAllVariants: args.include_all_variants || false
+        }
+      );
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
+      };
+    }
+    
+    // Relationships & Dependencies (Phase 6)
+    if (name === 'ecl_find_components_by_tag') {
+      const result = Relationships.findComponentsByTag(
+        db,
+        args.tags,
+        {
+          tag_type: args.tag_type,
+          match_mode: args.match_mode || 'any',
+          include_metadata: args.include_metadata !== false
+        }
+      );
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
+      };
+    }
+    
+    if (name === 'ecl_get_available_tags') {
+      const result = Relationships.getAvailableTags(
+        db,
+        {
+          tag_type: args.tag_type,
+          include_counts: args.include_counts !== false
+        }
+      );
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
+      };
+    }
+    
+    if (name === 'ecl_find_similar_components') {
+      const result = Relationships.findSimilarComponents(
+        db,
+        args.component,
+        {
+          min_shared_tags: args.min_shared_tags || 2,
+          limit: args.limit || 10
+        }
+      );
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
+      };
+    }
+    
+    if (name === 'ecl_analyze_dependencies') {
+      const result = Relationships.analyzeComponentDependencies(
+        db,
+        args.component,
+        {
+          include_suggestions: args.include_suggestions !== false,
+          include_conflicts: args.include_conflicts !== false,
+          recursive: args.recursive || false
+        }
+      );
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
+      };
+    }
+    
+    if (name === 'ecl_build_relationship_graph') {
+      const result = Relationships.buildRelationshipGraph(
+        db,
+        {
+          components: args.components,
+          relationship_types: args.relationship_types || ['requires', 'suggests', 'contains', 'alternative'],
+          max_depth: args.max_depth || 2,
+          format: args.format || 'cytoscape'
+        }
+      );
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
+      };
+    }
+    
+    if (name === 'ecl_analyze_conflicts') {
+      const result = Relationships.analyzeComponentConflicts(
+        db,
+        args.components,
+        {
+          include_warnings: args.include_warnings !== false,
+          include_recommendations: args.include_recommendations !== false
+        }
+      );
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
+      };
+    }
+    
+    if (name === 'ecl_suggest_alternatives') {
+      const result = Relationships.suggestAlternatives(
+        db,
+        args.component
+      );
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
+      };
+    }
+
     return {
       content: [
         {
@@ -712,6 +1807,11 @@ For manual initialization details, check individual component documentation.
       ],
       isError: true,
     };
+  } finally {
+    // Clean up database connection
+    if (db) {
+      closeDatabase(db);
+    }
   }
 });
 
