@@ -37,36 +37,105 @@ Unlike basic documentation servers, this MCP server provides:
 
 ## Installation
 
+### Install Directly from GitHub
+
+The easiest way to use this MCP server is to install it directly from GitHub using npm:
+
 ```bash
+npm install git+https://github.com/brownrl/eco_mcp.git
+```
+
+This will install all dependencies and make the `ecl-mcp` command available.
+
+### For Development
+
+Clone the repository and install dependencies:
+
+```bash
+git clone https://github.com/brownrl/eco_mcp.git
+cd eco_mcp
 npm install
 ```
 
 ## Usage
 
-### Running the Server
+### Quick Start
+
+After installation, you can run the server directly:
 
 ```bash
-npm start
+npx ecl-mcp
 ```
 
-For development with auto-restart:
+Or if installed globally:
+
 ```bash
-npm run dev
+ecl-mcp
 ```
 
-### Adding to MCP Client Configuration
+For help and version information:
 
-Add this server to your MCP client configuration (e.g., Claude Desktop, Cline):
+```bash
+ecl-mcp --help
+ecl-mcp --version
+```
+
+### MCP Client Configuration
+
+Configure your MCP client to use this server:
+
+#### Claude Desktop
+
+Add to your Claude Desktop configuration file:
+
+**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`  
+**Windows**: `%APPDATA%\Claude\claude_desktop_config.json`  
+**Linux**: `~/.config/Claude/claude_desktop_config.json`
 
 ```json
 {
   "mcpServers": {
     "ecl": {
-      "command": "node",
-      "args": ["/home/simon/git/CNECT/ecl_mcp/index.js"]
+      "command": "npx",
+      "args": ["ecl-mcp"]
     }
   }
 }
+```
+
+#### Cline (VS Code Extension)
+
+Add to your VS Code settings (`.vscode/settings.json` or User Settings):
+
+```json
+{
+  "cline.mcpServers": {
+    "ecl": {
+      "command": "npx",
+      "args": ["ecl-mcp"]
+    }
+  }
+}
+```
+
+#### Other MCP Clients
+
+For any MCP-compatible client, use:
+
+- **Command**: `npx`
+- **Args**: `["ecl-mcp"]`
+
+Or with absolute path after global installation:
+
+- **Command**: `ecl-mcp`
+- **Args**: `[]`
+
+### Development Mode
+
+For development with auto-restart on file changes:
+
+```bash
+npm run dev
 ```
 
 ## Available Tools

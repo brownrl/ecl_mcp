@@ -218,7 +218,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           required: ['query'],
         },
       },
-      
+
       // ===== ENHANCED COMPONENT SEARCH (Phase 3) =====
       {
         name: 'ecl_search_components',
@@ -268,7 +268,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           required: ['component'],
         },
       },
-      
+
       // ===== API DOCUMENTATION SEARCH (Phase 3) =====
       {
         name: 'ecl_search_api',
@@ -310,7 +310,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           required: ['component'],
         },
       },
-      
+
       // ===== CODE EXAMPLE SEARCH (Phase 3) =====
       {
         name: 'ecl_search_code_examples',
@@ -375,7 +375,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           required: ['component'],
         },
       },
-      
+
       // ===== USAGE GUIDANCE (Phase 3) =====
       {
         name: 'ecl_get_component_guidance',
@@ -413,7 +413,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           },
         },
       },
-      
+
       // ===== COMPONENT RELATIONSHIPS (Phase 3) =====
       {
         name: 'ecl_find_related_components',
@@ -452,7 +452,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           required: ['component'],
         },
       },
-      
+
       // ===== DESIGN TOKENS (Phase 3) =====
       {
         name: 'ecl_search_design_tokens',
@@ -589,7 +589,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           },
         },
       },
-      
+
       // ===== VALIDATION & DIAGNOSTICS (Phase 4) =====
       {
         name: 'ecl_validate_component_usage',
@@ -683,7 +683,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           required: ['components'],
         },
       },
-      
+
       // ===== CODE GENERATION (Phase 5) =====
       {
         name: 'ecl_get_complete_example',
@@ -759,7 +759,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           required: ['components'],
         },
       },
-      
+
       // ===== RELATIONSHIPS & DEPENDENCIES (Phase 6) =====
       {
         name: 'ecl_find_components_by_tag',
@@ -770,7 +770,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             tags: {
               oneOf: [
                 { type: 'string' },
-                { 
+                {
                   type: 'array',
                   items: { type: 'string' }
                 }
@@ -928,7 +928,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           required: ['component'],
         },
       },
-      
+
       // ===== SYSTEM HEALTH & DIAGNOSTICS (Phase 8) =====
       {
         name: 'ecl_health_check',
@@ -945,7 +945,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 // Handle tool calls
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args } = request.params;
-  
+
   // Database connection for Phase 3 tools
   let db = null;
 
@@ -1338,14 +1338,14 @@ For manual initialization, see: ${component.url}
 
 ## Components requiring JavaScript
 ${Object.entries(eclData.components)
-  .filter(([_, comp]) => comp.auto_init)
-  .map(([_, comp]) => `- **${comp.name}**: data-ecl-auto-init="${comp.auto_init}"`)
-  .join('\n')}
+                .filter(([_, comp]) => comp.auto_init)
+                .map(([_, comp]) => `- **${comp.name}**: data-ecl-auto-init="${comp.auto_init}"`)
+                .join('\n')}
 
 ## Dependencies
 ${Object.entries(eclData.setup.dependencies)
-  .map(([key, value]) => `- **${key}**: ${value}`)
-  .join('\n')}
+                .map(([key, value]) => `- **${key}**: ${value}`)
+                .join('\n')}
 
 For manual initialization details, check individual component documentation.
 `,
@@ -1355,7 +1355,7 @@ For manual initialization details, check individual component documentation.
     }
 
     // ===== PHASE 3 ENHANCED SEARCH TOOLS =====
-    
+
     // Component Search
     if (name === 'ecl_search_components') {
       const result = Search.searchComponents(db, args);
@@ -1368,7 +1368,7 @@ For manual initialization details, check individual component documentation.
         ],
       };
     }
-    
+
     if (name === 'ecl_get_component_details') {
       const result = Search.getComponentDetails(db, args.component);
       return {
@@ -1380,7 +1380,7 @@ For manual initialization details, check individual component documentation.
         ],
       };
     }
-    
+
     // API Search
     if (name === 'ecl_search_api') {
       const result = Search.searchAPI(db, args);
@@ -1393,7 +1393,7 @@ For manual initialization details, check individual component documentation.
         ],
       };
     }
-    
+
     if (name === 'ecl_get_component_api') {
       const result = Search.getComponentAPI(db, args.component);
       return {
@@ -1405,7 +1405,7 @@ For manual initialization details, check individual component documentation.
         ],
       };
     }
-    
+
     // Code Example Search
     if (name === 'ecl_search_code_examples') {
       const result = Search.searchExamples(db, args);
@@ -1418,7 +1418,7 @@ For manual initialization details, check individual component documentation.
         ],
       };
     }
-    
+
     if (name === 'ecl_get_example') {
       const result = Search.getExample(db, args.exampleId);
       return {
@@ -1430,7 +1430,7 @@ For manual initialization details, check individual component documentation.
         ],
       };
     }
-    
+
     if (name === 'ecl_get_component_examples') {
       const result = Search.getComponentExamples(db, args.component);
       return {
@@ -1442,7 +1442,7 @@ For manual initialization details, check individual component documentation.
         ],
       };
     }
-    
+
     // Guidance Search
     if (name === 'ecl_get_component_guidance') {
       const result = Search.getComponentGuidance(db, args.component);
@@ -1455,7 +1455,7 @@ For manual initialization details, check individual component documentation.
         ],
       };
     }
-    
+
     if (name === 'ecl_search_guidance') {
       const result = Search.searchGuidance(db, args);
       return {
@@ -1467,7 +1467,7 @@ For manual initialization details, check individual component documentation.
         ],
       };
     }
-    
+
     // Relationship Search
     if (name === 'ecl_find_related_components') {
       const result = Search.findRelatedComponents(db, args.component, args.relationshipType);
@@ -1480,7 +1480,7 @@ For manual initialization details, check individual component documentation.
         ],
       };
     }
-    
+
     if (name === 'ecl_get_dependency_graph') {
       const result = Search.getDependencyGraph(db, args.component, args.maxDepth);
       return {
@@ -1492,7 +1492,7 @@ For manual initialization details, check individual component documentation.
         ],
       };
     }
-    
+
     // Design Token Search
     if (name === 'ecl_search_design_tokens') {
       const result = Search.searchDesignTokens(db, args);
@@ -1505,7 +1505,7 @@ For manual initialization details, check individual component documentation.
         ],
       };
     }
-    
+
     if (name === 'ecl_get_tokens_by_category') {
       const result = Search.getTokensByCategory(db, args.category);
       return {
@@ -1517,7 +1517,7 @@ For manual initialization details, check individual component documentation.
         ],
       };
     }
-    
+
     if (name === 'ecl_get_token') {
       const result = Search.getToken(db, args.tokenName);
       return {
@@ -1529,7 +1529,7 @@ For manual initialization details, check individual component documentation.
         ],
       };
     }
-    
+
     if (name === 'ecl_get_token_categories') {
       const result = Search.getTokenCategories(db);
       return {
@@ -1541,14 +1541,14 @@ For manual initialization details, check individual component documentation.
         ],
       };
     }
-    
+
     // Validation & Diagnostics
     if (name === 'ecl_validate_component_usage') {
       const result = await Validation.validateComponentUsage(
-        db, 
-        args.component, 
-        args.html_code, 
-        args.js_code, 
+        db,
+        args.component,
+        args.html_code,
+        args.js_code,
         args.context
       );
       return {
@@ -1560,12 +1560,12 @@ For manual initialization details, check individual component documentation.
         ],
       };
     }
-    
+
     if (name === 'ecl_check_accessibility') {
       const result = await Validation.checkAccessibility(
-        db, 
-        args.html_code, 
-        args.component, 
+        db,
+        args.html_code,
+        args.component,
         args.wcag_level
       );
       return {
@@ -1577,12 +1577,12 @@ For manual initialization details, check individual component documentation.
         ],
       };
     }
-    
+
     if (name === 'ecl_analyze_ecl_code') {
       const result = await Validation.analyzeEclCode(
-        db, 
-        args.html_code, 
-        args.js_code, 
+        db,
+        args.html_code,
+        args.js_code,
         args.css_code
       );
       return {
@@ -1594,11 +1594,11 @@ For manual initialization details, check individual component documentation.
         ],
       };
     }
-    
+
     if (name === 'ecl_check_conflicts') {
       const result = await Validation.checkConflicts(
-        db, 
-        args.components, 
+        db,
+        args.components,
         args.context
       );
       return {
@@ -1610,12 +1610,12 @@ For manual initialization details, check individual component documentation.
         ],
       };
     }
-    
+
     // Code Generation (Phase 5)
     if (name === 'ecl_get_complete_example') {
       const result = Generator.getCompleteExample(
-        db, 
-        args.component, 
+        db,
+        args.component,
         {
           exampleType: args.example_type,
           variant: args.variant
@@ -1633,8 +1633,8 @@ For manual initialization details, check individual component documentation.
 
     if (name === 'ecl_generate_component') {
       const result = Generator.generateComponent(
-        db, 
-        args.component, 
+        db,
+        args.component,
         {
           customization: args.customization,
           framework: args.framework || 'vanilla',
@@ -1653,8 +1653,8 @@ For manual initialization details, check individual component documentation.
 
     if (name === 'ecl_create_playground') {
       const result = Generator.createPlayground(
-        db, 
-        args.components, 
+        db,
+        args.components,
         {
           customCode: args.custom_code,
           includeAllVariants: args.include_all_variants || false
@@ -1669,7 +1669,7 @@ For manual initialization details, check individual component documentation.
         ],
       };
     }
-    
+
     // Relationships & Dependencies (Phase 6)
     if (name === 'ecl_find_components_by_tag') {
       const result = Relationships.findComponentsByTag(
@@ -1690,7 +1690,7 @@ For manual initialization details, check individual component documentation.
         ],
       };
     }
-    
+
     if (name === 'ecl_get_available_tags') {
       const result = Relationships.getAvailableTags(
         db,
@@ -1708,7 +1708,7 @@ For manual initialization details, check individual component documentation.
         ],
       };
     }
-    
+
     if (name === 'ecl_find_similar_components') {
       const result = Relationships.findSimilarComponents(
         db,
@@ -1727,7 +1727,7 @@ For manual initialization details, check individual component documentation.
         ],
       };
     }
-    
+
     if (name === 'ecl_analyze_dependencies') {
       const result = Relationships.analyzeComponentDependencies(
         db,
@@ -1747,7 +1747,7 @@ For manual initialization details, check individual component documentation.
         ],
       };
     }
-    
+
     if (name === 'ecl_build_relationship_graph') {
       const result = Relationships.buildRelationshipGraph(
         db,
@@ -1767,7 +1767,7 @@ For manual initialization details, check individual component documentation.
         ],
       };
     }
-    
+
     if (name === 'ecl_analyze_conflicts') {
       const result = Relationships.analyzeComponentConflicts(
         db,
@@ -1786,7 +1786,7 @@ For manual initialization details, check individual component documentation.
         ],
       };
     }
-    
+
     if (name === 'ecl_suggest_alternatives') {
       const result = Relationships.suggestAlternatives(
         db,
@@ -1801,15 +1801,15 @@ For manual initialization details, check individual component documentation.
         ],
       };
     }
-    
+
     if (name === 'ecl_health_check') {
       const startTime = Date.now();
       const health = performHealthCheck(db);
       const executionTime = Date.now() - startTime;
-      
+
       // Track performance
       globalTracker.track('ecl_health_check', executionTime, true);
-      
+
       return {
         content: [
           {
@@ -1859,10 +1859,10 @@ For manual initialization details, check individual component documentation.
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  
+
   // Start cache cleanup job (runs every 5 minutes)
   startCleanupJob();
-  
+
   console.error('ECL MCP Server running on stdio');
   console.error('Cache cleanup job started');
 }

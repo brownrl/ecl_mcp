@@ -1,20 +1,43 @@
 {
   "name": "ecl-mcp-server",
-  "version": "1.0.0",
-  "description": "MCP server for Europa Component Library (ECL) - provides comprehensive knowledge about ECL components, guidelines, and usage",
+  "version": "2.0.0",
+  "description": "MCP server for Europa Component Library (ECL) - provides comprehensive knowledge about ECL components, guidelines, and usage with 40+ specialized tools",
   "type": "module",
   "main": "index.js",
+  "bin": {
+    "ecl-mcp": "./bin/ecl-mcp.js"
+  },
   "scripts": {
     "start": "node index.js",
-    "dev": "node --watch index.js"
+    "dev": "node --watch index.js",
+    "crawl": "node scripts/crawl-ecl.js",
+    "extract": "node scripts/extract-structured-data.js"
   },
   "keywords": [
     "mcp",
+    "model-context-protocol",
     "ecl",
     "europa-component-library",
     "european-commission",
-    "design-system"
+    "design-system",
+    "ai-assistant",
+    "claude",
+    "cursor",
+    "cline",
+    "coding-agent",
+    "component-library",
+    "accessibility",
+    "wcag",
+    "code-generation"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/brownrl/eco_mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/brownrl/eco_mcp/issues"
+  },
+  "homepage": "https://github.com/brownrl/eco_mcp#readme",
   "author": "Simon Hengchen <simon.hengchen@ext.ec.europa.eu>",
   "license": "MIT",
   "dependencies": {

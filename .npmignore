@@ -1,0 +1,38 @@
+# Development files
+.git/
+.gitignore
+.DS_Store
+*.log
+npm-debug.log*
+
+# Test files
+test-*.js
+tests/
+
+# Build and temp files
+*.tmp
+*.temp
+.cache/
+
+# Documentation (keep only README.md in npm package)
+AGENTS.md
+ENHANCEMENT-PLAN.md
+PROGRESS.md
+
+# Example files
+examples/
+
+# Logs
+logs/
+*.log
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+Thumbs.db
+.DS_Store
