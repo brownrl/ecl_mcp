@@ -222,11 +222,11 @@ Three specialized scripts extract content from ECL documentation:
 
 ## Verification Reports
 
-| Category | Coverage | Documentation |
-|----------|----------|---------------|
-| **Components** | 50/50 (100%) | [VERIFIED-REPORT.md](./VERIFIED-REPORT.md) |
-| **Utilities** | 17/17 (100%) | [UTILITIES-VERIFICATION.md](./UTILITIES-VERIFICATION.md) |
-| **Guidelines** | 6/6 (100%) | [GUIDELINES-VERIFICATION.md](./GUIDELINES-VERIFICATION.md) |
+| Category       | Coverage     | Documentation                                              |
+| -------------- | ------------ | ---------------------------------------------------------- |
+| **Components** | 50/50 (100%) | [VERIFIED-REPORT.md](./VERIFIED-REPORT.md)                 |
+| **Utilities**  | 17/17 (100%) | [UTILITIES-VERIFICATION.md](./UTILITIES-VERIFICATION.md)   |
+| **Guidelines** | 6/6 (100%)   | [GUIDELINES-VERIFICATION.md](./GUIDELINES-VERIFICATION.md) |
 
 **Grand Total: 73/73 (100%)**
 

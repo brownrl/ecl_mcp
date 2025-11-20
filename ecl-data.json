@@ -37,7 +37,16 @@
   "guidelines": {
     "typography": {
       "url": "https://ec.europa.eu/component-library/eu/guidelines/typography/",
-      "description": "Typography guidelines for consistent text styling"
+      "description": "Typography guidelines for consistent text styling",
+      "typeface": "Arial, sans-serif",
+      "base_font_size": "16px (1rem)",
+      "approach": "utility-class-first",
+      "critical_note": "ECL does NOT set font-family on base HTML elements (html, body, p, etc.). You MUST use ECL utility classes on all text elements or they will render in browser default font (Times New Roman). Use: ecl-u-type-heading-1 through ecl-u-type-heading-6 for headings, ecl-u-type-paragraph for paragraphs.",
+      "utility_classes": {
+        "headings": ["ecl-u-type-heading-1", "ecl-u-type-heading-2", "ecl-u-type-heading-3", "ecl-u-type-heading-4", "ecl-u-type-heading-5", "ecl-u-type-heading-6"],
+        "paragraphs": ["ecl-u-type-paragraph", "ecl-u-type-paragraph-lead", "ecl-u-type-paragraph-m", "ecl-u-type-paragraph-s", "ecl-u-type-paragraph-xs"]
+      },
+      "utilities_url": "https://ec.europa.eu/component-library/eu/utilities/typography/usage/"
     },
     "colours": {
       "url": "https://ec.europa.eu/component-library/eu/guidelines/colours/",
@@ -481,6 +490,7 @@
     "cookie_consent": "https://webgate.ec.europa.eu/fpfis/wikis/display/webtools/Cookie+Consent+Kit+Banner"
   },
   "important_notes": [
+    "CRITICAL: ECL uses utility-class-first approach - ALWAYS use typography utility classes (ecl-u-type-heading-*, ecl-u-type-paragraph) on ALL text elements. ECL does NOT set font-family on base HTML elements - text without utility classes will render in browser default font (Times New Roman).",
     "Always host SVG sprites on the same domain to avoid CORS issues",
     "Use svg4everybody polyfill if loading SVGs from CDN: svg4everybody({ polyfill: true })",
     "ECL uses Pikaday for datepicker - must be loaded separately",

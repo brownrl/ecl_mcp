@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>ECL Font Test</title>
+    <meta content="width=device-width,initial-scale=1" name="viewport" />
+    <link rel="stylesheet" href="https://cdn1.fpfis.tech.ec.europa.eu/ecl/v4.11.1/ec/styles/ecl-ec.css" media="all" />
+    <link rel="stylesheet" href="https://cdn1.fpfis.tech.ec.europa.eu/ecl/v4.11.1/ec/styles/optional/ecl-ec-utilities.css" media="all" />
+</head>
+<body>
+    <h1>Font Family Test</h1>
+    
+    <div style="margin: 20px; padding: 20px; border: 2px solid red;">
+        <h2>Without any ECL classes</h2>
+        <p>This paragraph has NO ECL classes at all. What font does it use?</p>
+        <p>The quick brown fox jumps over the lazy dog.</p>
+    </div>
+    
+    <div style="margin: 20px; padding: 20px; border: 2px solid green;">
+        <h2>With ecl-u-type-paragraph class</h2>
+        <p class="ecl-u-type-paragraph">This paragraph has class="ecl-u-type-paragraph". What font does it use?</p>
+        <p class="ecl-u-type-paragraph">The quick brown fox jumps over the lazy dog.</p>
+    </div>
+    
+    <div style="margin: 20px; padding: 20px; border: 2px solid blue;">
+        <h2>HTML, body, and other base elements</h2>
+        <ul>
+            <li>List item 1</li>
+            <li>List item 2</li>
+        </ul>
+        <span>This is a span element.</span>
+        <div>This is a div element.</div>
+    </div>
+    
+    <script>
+        // Log computed font-family for different elements
+        console.log("=== COMPUTED FONT-FAMILY VALUES ===");
+        console.log("html:", window.getComputedStyle(document.documentElement).fontFamily);
+        console.log("body:", window.getComputedStyle(document.body).fontFamily);
+        
+        const plainP = document.querySelectorAll('p')[0];
+        console.log("plain <p> (no class):", window.getComputedStyle(plainP).fontFamily);
+        
+        const eclP = document.querySelector('.ecl-u-type-paragraph');
+        console.log("<p class='ecl-u-type-paragraph'>:", window.getComputedStyle(eclP).fontFamily);
+        
+        const li = document.querySelector('li');
+        console.log("plain <li>:", window.getComputedStyle(li).fontFamily);
+        
+        const span = document.querySelector('span');
+        console.log("plain <span>:", window.getComputedStyle(span).fontFamily);
+    </script>
+</body>
+</html>

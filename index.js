@@ -1347,6 +1347,14 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         code += `\n\n<!-- Auto-initialization: Add data-ecl-auto-init="${component.auto_init}" to the root element -->`;
       }
 
+      // Add critical typography guidance
+      code += `\n\n<!-- IMPORTANT: ECL uses utility-class-first approach for typography.
+Always use ECL utility classes on text elements:
+- Headings: ecl-u-type-heading-1 through ecl-u-type-heading-6
+- Paragraphs: ecl-u-type-paragraph
+Without these classes, text will render in browser default font.
+See: https://ec.europa.eu/component-library/eu/utilities/typography/usage/ -->`;
+
       return {
         content: [
           {

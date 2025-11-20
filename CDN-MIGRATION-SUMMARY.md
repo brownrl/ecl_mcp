@@ -70,10 +70,10 @@ Resource Accessibility
 
 ## CDN Comparison
 
-| CDN | Version 4.11.1 | Status |
-|-----|----------------|--------|
-| **Official EC CDN** | ✅ Available | **RECOMMENDED** |
-| jsdelivr | ❌ Not Available | Avoid |
+| CDN                 | Version 4.11.1  | Status          |
+| ------------------- | --------------- | --------------- |
+| **Official EC CDN** | ✅ Available     | **RECOMMENDED** |
+| jsdelivr            | ❌ Not Available | Avoid           |
 
 ## Impact
 

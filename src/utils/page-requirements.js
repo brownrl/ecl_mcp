@@ -173,13 +173,6 @@ function generateHTMLBoilerplate(preset, stylesheets, scripts, version) {
   <!-- ECL ${preset.toUpperCase()} Styles (v${version}) -->
 ${styleLinks}
   
-  <!-- CRITICAL FIX: ECL reset.css does NOT set base font-family -->
-  <style>
-    html {
-      font-family: Arial, sans-serif !important;
-    }
-  </style>
-  
   <!-- Change no-js to has-js when JavaScript loads -->
   <script>
     document.documentElement.classList.remove('no-js');
@@ -188,6 +181,12 @@ ${styleLinks}
 </head>
 <body>
   <!-- Your ECL components go here -->
+  <!-- IMPORTANT: ECL uses utility-class-first approach for typography.
+       Always use ECL utility classes on text elements:
+       - Headings: ecl-u-type-heading-1 through ecl-u-type-heading-6
+       - Paragraphs: ecl-u-type-paragraph (default), ecl-u-type-paragraph-lead, etc.
+       - Without these classes, text will render in browser default font (Times New Roman)
+       See: https://ec.europa.eu/component-library/eu/utilities/typography/usage/ -->
   <main class="ecl-container">
     <h1 class="ecl-u-type-heading-1">Page Title</h1>
     <p class="ecl-u-type-paragraph">Your content here.</p>
