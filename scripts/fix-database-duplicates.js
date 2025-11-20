@@ -161,23 +161,40 @@ try {
     }
 
     // 4. Check code_examples for duplicates
-    console.log('4. CHECKING code_examples TABLE');
+
+    console.log('4. DEDUPLICATING code_examples TABLE');
     console.log('='.repeat(60));
 
     const examplesBefore = db.prepare('SELECT COUNT(*) as count FROM code_examples').get();
-    const uniqueExamples = db.prepare(`
-    SELECT COUNT(DISTINCT page_id || '|' || language || '|' || SUBSTR(code, 1, 100)) as count 
-    FROM code_examples
-  `).get();
+    // Use full code for deduplication, not just first 100 chars
+    db.exec(`
+      CREATE TEMP TABLE code_examples_unique AS
+      SELECT 
+        MIN(id) as id,
+        page_id,
+        language,
+        code,
+        MIN(created_at) as created_at
+      FROM code_examples
+      GROUP BY page_id, language, code
+    `);
 
+    const uniqueExamples = db.prepare('SELECT COUNT(*) as count FROM code_examples_unique').get();
     console.log(`Total rows: ${examplesBefore.count}`);
-    console.log(`Unique combinations: ${uniqueExamples.count}`);
+    console.log(`Unique rows: ${uniqueExamples.count}`);
+    console.log(`Removing: ${examplesBefore.count - uniqueExamples.count} duplicates`);
 
-    if (examplesBefore.count > uniqueExamples.count + 50) {  // Allow some variance for legitimate similar code
-        console.log(`⚠️  Potential duplicates detected, but not auto-fixing (code similarity may be legitimate)`);
-    } else {
-        console.log('✅ No significant duplicates in code_examples\n');
-    }
+    // Replace table
+    db.exec('DELETE FROM code_examples');
+    db.exec(`
+      INSERT INTO code_examples (id, page_id, language, code, created_at)
+      SELECT id, page_id, language, code, created_at
+      FROM code_examples_unique
+    `);
+
+    const examplesAfter = db.prepare('SELECT COUNT(*) as count FROM code_examples').get();
+    console.log(`After: ${examplesAfter.count} rows`);
+    console.log('✅ Deduplicated code_examples\n');
 
     // Commit transaction
     db.exec('COMMIT');

@@ -466,9 +466,26 @@ export function getComponentDetails(db, identifier) {
     `).all(component.id);
 
     // Get code examples count
-    const exampleCount = db.prepare(`
-      SELECT COUNT(*) as count FROM code_examples WHERE page_id = ?
-    `).get(component.id).count;
+
+      // Aggregate example count across all related pages for the component
+      // Find all page IDs for this component (usage, code, api, playground)
+      const normalized = (component.component_name || component.title).toLowerCase().replace(/\s|-/, '');
+      const relatedPages = db.prepare(`
+        SELECT DISTINCT p.id
+        FROM pages p
+        LEFT JOIN component_metadata cm ON p.id = cm.page_id
+        WHERE REPLACE(REPLACE(LOWER(cm.component_name), ' ', ''), '-', '') = ?
+           OR REPLACE(REPLACE(LOWER(p.title), ' ', ''), '-', '') = ?
+      `).all(normalized, normalized);
+
+      let exampleCount = 0;
+      if (relatedPages.length > 0) {
+        const pageIds = relatedPages.map(p => p.id);
+        const placeholders = pageIds.map(() => '?').join(',');
+        exampleCount = db.prepare(`
+          SELECT COUNT(*) as count FROM code_examples WHERE page_id IN (${placeholders})
+        `).get(...pageIds).count;
+      }
 
     return {
       success: true,
