@@ -66,6 +66,15 @@ function getComponentTemplate(db, component) {
   try {
     // Get simplest example as template
     // NOTE: p.component_name is actually the CATEGORY, p.title is the actual component name
+    
+    // Try multiple name variations to match singular/plural forms
+    const componentStr = String(component).toLowerCase();
+    const componentVariations = [
+      componentStr,
+      componentStr + 's',              // Add 's' for plural
+      componentStr.replace(/s$/, ''),  // Remove trailing 's' if present
+    ];
+
     const query = `
       SELECT 
         ce.code,
@@ -74,7 +83,10 @@ function getComponentTemplate(db, component) {
       FROM code_examples ce
       JOIN pages p ON ce.page_id = p.id
       LEFT JOIN enhanced_code_examples ece ON ce.id = ece.example_id
-      WHERE LOWER(p.title) = LOWER(?)
+      WHERE (
+        LOWER(p.title) IN (${componentVariations.map(() => '?').join(', ')})
+        OR LOWER(p.component_name) IN (${componentVariations.map(() => '?').join(', ')})
+      )
         AND ce.language = 'html'
       ORDER BY 
         CASE 
@@ -85,7 +97,12 @@ function getComponentTemplate(db, component) {
       LIMIT 1
     `;
 
-    const template = db.prepare(query).get(component);
+    const params = [
+      ...componentVariations,
+      ...componentVariations
+    ];
+    
+    const template = db.prepare(query).get(...params);
 
     if (!template) {
       return {
