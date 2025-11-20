@@ -1,5 +1,5 @@
 /**
- * Relationships Module - Component dependency and relationship analysis
+ * Relationships Module - Component tag searching
  */
 
 export { 
@@ -7,16 +7,3 @@ export {
   getAvailableTags,
   findSimilarComponents
 } from './tag-searcher.js';
-
-export { 
-  analyzeComponentDependencies
-} from './dependency-analyzer.js';
-
-export { 
-  buildRelationshipGraph
-} from './graph-builder.js';
-
-export { 
-  analyzeComponentConflicts,
-  suggestAlternatives
-} from './conflict-analyzer.js';

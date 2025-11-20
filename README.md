@@ -26,14 +26,8 @@ Unlike basic documentation servers, this MCP server provides:
 4. **Usage Guidance** - Know when to use (and when NOT to use) each component
 5. **Code Examples** - Filter by language, complexity, completeness
 6. **Accessibility First** - WCAG compliance data and implementation notes
-7. **Design Tokens** - Access to design system tokens (colors, spacing, typography)
-8. **Code Generation** - Generate customized components and interactive playgrounds
-9. **Validation Tools** - Check WCAG compliance, code quality, and component conflicts
-10. **Intelligent Responses** - Helpful suggestions when results are empty
-9. **Component Validation** - Validate HTML/JS against ECL requirements with quality scoring
-10. **Accessibility Checking** - Verify WCAG 2.1 compliance (Level A, AA, AAA)
-11. **Code Analysis** - Detect components, find anti-patterns, check design token usage
-12. **Conflict Detection** - Identify incompatible component combinations
+7. **Code Generation** - Generate customized components and interactive playgrounds
+9. **Intelligent Responses** - Helpful suggestions when results are empty
 
 ## Installation
 
@@ -142,10 +136,9 @@ npm run dev
 
 ## Available Tools
 
-This server provides **28 tools** organized in multiple categories:
+This server provides **24 tools** organized in multiple categories:
 
 - **3 Code Generation Tools** (Phase 5) - Generate customized components and interactive playgrounds
-- **4 Validation Tools** (Phase 4) - Validate components, check accessibility, analyze code quality
 - **14 Enhanced Search Tools** (Phase 3) - Semantic search with rich metadata (prefix: `ecl_*`)
 - **7 Legacy Tools** (Phase 1) - Basic functionality for backward compatibility
 
@@ -158,13 +151,7 @@ For complete tool reference, see **[TOOLS.md](TOOLS.md)**
 - `ecl_generate_component` - Generate customized components with variants, sizes, content
 - `ecl_create_playground` - Create interactive multi-component testing environments
 
-**Validation & Diagnostics:**
-- `ecl_validate_component_usage` - Validate HTML/JS against ECL requirements with quality scoring
-- `ecl_check_accessibility` - Verify WCAG 2.1 compliance (Level A, AA, AAA)
-- `ecl_analyze_ecl_code` - Detect components, find anti-patterns, check design token usage
-- `ecl_check_conflicts` - Identify incompatible component combinations
-
-**Component Discovery:**
+**Component Discovery:
 - `ecl_search_components` - Advanced multi-filter component search
 - `ecl_get_component_details` - Complete component information
 
@@ -184,11 +171,6 @@ For complete tool reference, see **[TOOLS.md](TOOLS.md)**
 **Component Relationships:**
 - `ecl_find_related_components` - Find dependencies and conflicts
 - `ecl_get_dependency_graph` - Build recursive dependency graph
-
-**Design Tokens:**
-- `ecl_search_design_tokens` - Search by name or category
-- `ecl_get_tokens_by_category` - Get all tokens for category
-- `ecl_get_token` - Get specific token details
 
 ---
 
@@ -328,7 +310,6 @@ Site Header, Page Header, Site Footer
 - ✅ **Accessibility Data**: 783 requirements with WCAG criteria and implementation notes
 - ✅ **API Documentation**: 30+ entries covering attributes, props, methods, events
 - ✅ **Component Tags**: 1,366 tags for advanced categorization
-- ✅ **Design Tokens**: Token search by category (colors, spacing, typography)
 - ✅ **Relationships**: Discover component dependencies and conflicts
 - ✅ **Performance**: Query execution 0-50ms typical
 - ✅ **Standardized Responses**: Consistent JSON format with metadata and suggestions
@@ -338,7 +319,6 @@ Site Header, Page Header, Site Footer
 8 New Tables (Phase 2):
 ├── component_metadata (169 records) - Component types and complexity
 ├── component_api (30 records) - Attributes, props, methods, events
-├── design_tokens (0 records*) - Colors, spacing, typography tokens
 ├── usage_guidance (520 records) - Do's, don'ts, best practices
 ├── component_relationships (0 records*) - Requires/suggests/conflicts
 ├── component_tags (1,366 records) - Categorization tags
@@ -390,21 +370,7 @@ ecl_search_code_examples({
 ecl_get_dependency_graph({ component: "form", maxDepth: 2 })
 ```
 
-### Exploring Design Tokens
-
-```javascript
-// 1. List all token categories
-ecl_get_token_categories()
-
-// 2. Get all color tokens
-ecl_get_tokens_by_category({ category: "color" })
-
-// 3. Find specific token
-ecl_get_token({ tokenName: "primary-color" })
-
-// 4. Search tokens by keyword
-ecl_search_design_tokens({ query: "spacing" })
-```
+---
 
 ### Accessibility Compliance
 

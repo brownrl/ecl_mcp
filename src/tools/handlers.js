@@ -1,7 +1,6 @@
 
 import { getDatabase, closeDatabase } from '../db.js';
 import * as Search from '../search/index.js';
-import * as Validation from '../validation/index.js';
 import * as Generator from '../generator/index.js';
 import * as Relationships from '../relationships/index.js';
 import * as Utils from '../utils/index.js';
@@ -21,7 +20,7 @@ export async function handleToolCall(name, args, eclData) {
 
     try {
         // Initialize database for tools that need it
-        if (['ecl_search', 'ecl_get_component', 'ecl_generate_code', 'ecl_validate', 'ecl_analyze_relationships', 'ecl_system_info'].includes(name)) {
+        if (['ecl_search', 'ecl_get_component', 'ecl_generate_code', 'ecl_system_info'].includes(name)) {
             db = getDatabase(true); // readonly
         }
 
@@ -34,17 +33,11 @@ export async function handleToolCall(name, args, eclData) {
                 case 'component':
                     result = Search.searchComponents(db, { query, ...filters, limit });
                     break;
-                case 'api':
-                    result = Search.searchAPI(db, { query, ...filters, limit });
-                    break;
                 case 'example':
-                    result = Search.searchExamples(db, { component: query, ...filters, limit });
+                    result = Search.searchExamples(db, { query, ...filters, limit });
                     break;
                 case 'guidance':
                     result = Search.searchGuidance(db, { query, ...filters, limit });
-                    break;
-                case 'token':
-                    result = Search.searchDesignTokens(db, { query, ...filters, limit });
                     break;
                 case 'icon':
                     result = Utils.searchIcons(query, { ...filters, limit });
@@ -92,8 +85,8 @@ export async function handleToolCall(name, args, eclData) {
             }
 
             if (include.includes('api')) {
-                results.api = Search.getComponentAPI(db, componentId);
             }
+
             if (include.includes('examples')) {
                 results.examples = Search.getComponentExamples(db, componentId);
             }
@@ -159,44 +152,7 @@ export async function handleToolCall(name, args, eclData) {
             return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
         }
 
-        // 4. Unified Validator
-        if (name === 'ecl_validate') {
-            const { type, code, context = {} } = args;
-            let result;
-
-            switch (type) {
-                case 'usage':
-                    result = await Validation.validateComponentUsage(db, context.component, code, null, null);
-                    break;
-                case 'accessibility':
-                    result = await Validation.checkAccessibility(db, code, context.component, context.wcagLevel);
-                    break;
-                case 'quality':
-                    result = await Validation.analyzeEclCode(db, code);
-                    break;
-                case 'conflicts':
-                    result = await Validation.checkConflicts(db, context.components, null);
-                    break;
-                case 'structure':
-                    if (context.component && ['Text Field', 'Select', 'Checkbox', 'Radio'].some(c => context.component.includes(c))) {
-                        const cheerio = await import('cheerio');
-                        const $ = cheerio.load(code);
-                        const errors = [];
-                        const warnings = [];
-                        Validation.validateFormStructure($, context.component, errors, warnings);
-                        result = { errors, warnings, isValid: errors.length === 0 };
-                    } else {
-                        result = { message: "Structure validation currently only supported for form components." };
-                    }
-                    break;
-                default:
-                    throw new Error(`Unknown validation type: ${type}`);
-            }
-
-            return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
-        }
-
-        // 5. Unified Resource/Asset Tool
+        // 4. Unified Resource/Asset Tool
         if (name === 'ecl_get_resources') {
             const { type, id, options = {} } = args;
             let result;
@@ -225,15 +181,6 @@ export async function handleToolCall(name, args, eclData) {
                 case 'tags':
                     result = Relationships.getAvailableTags(db, { tag_type: options.category });
                     break;
-                case 'tokens':
-                    if (id) {
-                        result = Search.getToken(db, id);
-                    } else if (options.category) {
-                        result = Search.getTokensByCategory(db, options.category);
-                    } else {
-                        result = Search.getTokenCategories(db);
-                    }
-                    break;
                 case 'setup':
                     // Re-implementing basic setup guide logic here for simplicity
                     if (options.method === 'npm') {
@@ -260,39 +207,7 @@ export async function handleToolCall(name, args, eclData) {
             return { content: [{ type: 'text', text }] };
         }
 
-        // 6. Unified Relationship Tool
-        if (name === 'ecl_analyze_relationships') {
-            const { type, component, options = {} } = args;
-            let result;
-
-            switch (type) {
-                case 'dependencies':
-                    result = Relationships.analyzeComponentDependencies(db, component, { recursive: options.depth > 1 });
-                    break;
-                case 'related':
-                    result = Search.findRelatedComponents(db, component, options.relationshipType);
-                    break;
-                case 'similar':
-                    result = Relationships.findSimilarComponents(db, component, { limit: 10 });
-                    break;
-                case 'graph':
-                    result = Relationships.buildRelationshipGraph(db, {
-                        components: options.components,
-                        max_depth: options.depth,
-                        format: options.format
-                    });
-                    break;
-                case 'alternatives':
-                    result = Relationships.suggestAlternatives(db, component);
-                    break;
-                default:
-                    throw new Error(`Unknown relationship analysis type: ${type}`);
-            }
-
-            return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
-        }
-
-        // 7. System Tool
+        // 5. System Tool
         if (name === 'ecl_system_info') {
             const startTime = Date.now();
             const health = performHealthCheck(db);

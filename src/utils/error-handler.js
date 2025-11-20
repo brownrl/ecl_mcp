@@ -82,15 +82,6 @@ export class ConfigError extends ECLError {
 }
 
 /**
- * Cache errors
- */
-export class CacheError extends ECLError {
-    constructor(message, details = {}) {
-        super(message, 'CACHE_ERROR', details);
-    }
-}
-
-/**
  * Format error for MCP response
  * @param {Error} error - Error object
  * @param {object} context - Additional context

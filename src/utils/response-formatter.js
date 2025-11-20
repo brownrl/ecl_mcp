@@ -17,7 +17,6 @@ export function formatSuccess(data, metadata = {}, options = {}) {
         metadata: {
             source: 'ecl-database',
             version: '2.0',
-            cache_hit: false,
             ...metadata
         },
         ...(options.suggestions && { suggestions: options.suggestions }),

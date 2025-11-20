@@ -1,14 +1,13 @@
 /**
  * Health Check Tool for ECL MCP Server
  * 
- * Provides system health status, database metrics, cache statistics,
+ * Provides system health status, database metrics,
  * and performance information
  */
 
 import { existsSync, statSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { globalCache } from './cache.js';
 import { globalTracker } from './performance.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -26,9 +25,6 @@ export function performHealthCheck(db) {
         // Database health
         const dbHealth = checkDatabase(db);
 
-        // Cache health
-        const cacheHealth = checkCache();
-
         // Performance metrics
         const perfMetrics = checkPerformance();
 
@@ -36,14 +32,13 @@ export function performHealthCheck(db) {
         const toolStatus = checkTools(db);
 
         // Overall status
-        const status = determineOverallStatus(dbHealth, cacheHealth, perfMetrics);
+        const status = determineOverallStatus(dbHealth, perfMetrics);
 
         return {
             status,
             timestamp: new Date().toISOString(),
             uptime: process.uptime(),
             database: dbHealth,
-            cache: cacheHealth,
             performance: perfMetrics,
             tools: toolStatus,
             system: {
@@ -119,36 +114,6 @@ function checkDatabase(db) {
     } catch (error) {
         return {
             connected: false,
-            error: error.message
-        };
-    }
-}
-
-/**
- * Check cache health
- */
-function checkCache() {
-    try {
-        const stats = globalCache.getStats();
-        const size = globalCache.size();
-
-        return {
-            enabled: true,
-            entries: stats.entries,
-            size_mb: parseFloat(size.mb),
-            max_size_mb: parseFloat((globalCache.maxSize / (1024 * 1024)).toFixed(2)),
-            utilization: stats.utilization,
-            hit_rate: stats.hitRate,
-            statistics: {
-                hits: stats.hits,
-                misses: stats.misses,
-                evictions: stats.evictions,
-                expired: stats.expired
-            }
-        };
-    } catch (error) {
-        return {
-            enabled: false,
             error: error.message
         };
     }
@@ -237,7 +202,7 @@ function getMemoryUsage() {
 /**
  * Determine overall system status
  */
-function determineOverallStatus(dbHealth, cacheHealth, perfMetrics) {
+function determineOverallStatus(dbHealth, perfMetrics) {
     // Critical: Database must be connected
     if (!dbHealth.connected) {
         return 'unhealthy';
@@ -249,18 +214,6 @@ function determineOverallStatus(dbHealth, cacheHealth, perfMetrics) {
 
     if (avgTime > 200 || errorRate > 10) {
         return 'degraded';
-    }
-
-    // Check cache - only consider it degraded if actively being used with poor performance
-    if (cacheHealth.enabled && cacheHealth.entries > 0) {
-        const utilization = parseFloat(cacheHealth.utilization);
-        const hitRate = parseFloat(cacheHealth.hit_rate);
-        const totalRequests = cacheHealth.statistics.hits + cacheHealth.statistics.misses;
-
-        // Only check hit rate if we have significant traffic (>100 requests)
-        if (totalRequests > 100 && (utilization > 95 || hitRate < 20)) {
-            return 'degraded';
-        }
     }
 
     return 'healthy';

@@ -11,7 +11,6 @@ import {
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { startCleanupJob } from './src/utils/cache.js';
 import { resourceDefinitions, handleResourceRequest } from './src/resources/index.js';
 import { toolDefinitions, handleToolCall } from './src/tools/index.js';
 
@@ -74,11 +73,7 @@ async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
 
-  // Start cache cleanup job (runs every 5 minutes)
-  startCleanupJob();
-
   console.error('ECL MCP Server running on stdio');
-  console.error('Cache cleanup job started');
 }
 
 main().catch((error) => {
