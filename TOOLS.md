@@ -12,6 +12,7 @@ Complete reference for all available tools in the Europa Component Library MCP S
 - **[Component Relationships](#component-relationships)** - Discover component dependencies
 - **[Design Tokens](#design-tokens)** - Search design system tokens
 - **[Validation & Diagnostics](#validation--diagnostics)** - Validate components, check accessibility, analyze code quality
+- **[Typography Best Practices](#typography-best-practices)** - Critical ECL font inheritance guidance
 - **[Code Generation](#code-generation)** - Generate runnable examples, customize components, create playgrounds
 
 ---
@@ -1118,6 +1119,132 @@ const readyToDeploy =
   accessibility.data.wcag_aa_compliant &&
   quality.data.overall_quality_score > 85 &&
   conflicts.data.conflicts.length === 0;
+```
+
+---
+
+## Typography Best Practices
+
+### Critical: ECL Font Inheritance Issue
+
+**Problem:** ECL CSS defines `--ecl-font-family-default: arial, sans-serif` but **does NOT automatically apply it** to all elements. Without proper setup, text will display in browser default fonts (typically Times New Roman).
+
+**Solution:** Use one of these approaches:
+
+#### Approach 1: Container-Level Font (Recommended)
+Set `font-family: arial, sans-serif` on your main container element:
+
+```html
+<body>
+  <main class="ecl-container" style="font-family: arial, sans-serif">
+    <h1>This will be Arial</h1>
+    <p>All text inherits Arial from container</p>
+  </main>
+</body>
+```
+
+**Advantages:**
+- Single declaration affects all descendant elements
+- Most practical for full pages
+- Ensures consistent font inheritance
+- Works with or without ECL utility classes
+
+#### Approach 2: ECL Typography Utility Classes
+Add ECL typography classes to each text element:
+
+```html
+<h1 class="ecl-u-type-heading-1">Heading in Arial</h1>
+<h2 class="ecl-u-type-heading-2">Subheading in Arial</h2>
+<p class="ecl-u-type-paragraph-m">Paragraph in Arial</p>
+```
+
+**Advantages:**
+- Proper font, size, line-height, and spacing
+- Follows ECL design system exactly
+- Includes responsive typography
+
+**Available Classes:**
+- Headings: `ecl-u-type-heading-1` through `ecl-u-type-heading-6`
+- Paragraphs: `ecl-u-type-paragraph-xs`, `ecl-u-type-paragraph-s`, `ecl-u-type-paragraph-m`, `ecl-u-type-paragraph-l`
+- Body text: `ecl-u-type-{xs|s|m|l|xl}`
+
+#### Approach 3: Body-Level Font
+Set font on the body element:
+
+```html
+<body style="font-family: arial, sans-serif">
+  <main class="ecl-container">
+    <h1>All text inherits Arial</h1>
+  </main>
+</body>
+```
+
+**Advantages:**
+- Affects entire page
+- Simplest implementation
+
+### Validation Patterns
+
+The server includes 4 validation patterns to detect typography issues:
+
+**1. Missing Typography Classes** (Warning)
+```html
+<!-- ❌ Will trigger warning -->
+<h1>Heading without ECL class</h1>
+
+<!-- ✅ Correct -->
+<h1 class="ecl-u-type-heading-1">Heading with ECL class</h1>
+```
+
+**2. Body Without Font** (Warning)
+```html
+<!-- ❌ Will trigger warning -->
+<body>
+  <main>Content</main>
+</body>
+
+<!-- ✅ Correct -->
+<body style="font-family: arial, sans-serif">
+  <main>Content</main>
+</body>
+```
+
+**3. Main Container Without Font** (Info)
+```html
+<!-- ⚠️ Will trigger suggestion -->
+<main class="ecl-container">
+  <h1>Content</h1>
+</main>
+
+<!-- ✅ Better -->
+<main class="ecl-container" style="font-family: arial, sans-serif">
+  <h1>Content</h1>
+</main>
+```
+
+**4. Non-Arial Fonts** (Error)
+```html
+<!-- ❌ Will trigger error -->
+<div style="font-family: times new roman">Bad font</div>
+
+<!-- ✅ Correct -->
+<div style="font-family: arial, sans-serif">Correct font</div>
+```
+
+### Querying Typography Guidance
+
+You can query typography guidance using `ecl_get_component_guidance`:
+
+```javascript
+const guidance = await ecl_get_component_guidance({
+  component: "Typography"
+});
+
+// Returns:
+// - caveat: Font inheritance limitation explanation
+// - best-practice: Container-level font recommendation
+// - do: Typography class usage guidance
+// - note: Three approaches to ensure Arial font
 ```
 
 ---
