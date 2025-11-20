@@ -36,7 +36,7 @@ let db;
 
 function initDatabase() {
   db = new Database(DB_PATH);
-  
+
   // Create tables
   db.exec(`
     CREATE TABLE IF NOT EXISTS crawl_urls (
@@ -162,11 +162,11 @@ function fetchUrl(url, redirectCount = 0) {
       }
 
       let data = '';
-      
+
       res.on('data', (chunk) => {
         data += chunk;
       });
-      
+
       res.on('end', () => {
         resolve({
           statusCode: res.statusCode,
@@ -184,14 +184,14 @@ function fetchUrl(url, redirectCount = 0) {
 function extractLinks(html, baseUrl) {
   const $ = cheerio.load(html);
   const links = new Set();
-  
+
   $('a[href]').each((i, elem) => {
     const href = $(elem).attr('href');
     if (!href) return;
-    
+
     try {
       const absoluteUrl = new URL(href, baseUrl).href;
-      
+
       // Only include EC component library links
       if (absoluteUrl.startsWith(BASE_URL)) {
         // Normalize URL (remove fragments, trailing slashes)
@@ -202,52 +202,52 @@ function extractLinks(html, baseUrl) {
       // Invalid URL, skip
     }
   });
-  
+
   return Array.from(links);
 }
 
 // Parse page structure
 function parsePage(html, url) {
   const $ = cheerio.load(html);
-  
+
   // Extract basic page info
   const title = $('h1').first().text().trim() || $('title').text().trim();
-  
+
   // Try to determine category and component name from URL
   const urlParts = url.replace(BASE_URL, '').split('/').filter(p => p);
   let category = null;
   let componentName = null;
-  
+
   if (urlParts.length > 0) {
     category = urlParts[0]; // e.g., "components", "guidelines", etc.
     if (urlParts.length > 1) {
       componentName = urlParts[1]; // e.g., "button", "accordion"
     }
   }
-  
+
   // Extract all sections with headings
   const sections = [];
   let sectionIndex = 0;
-  
+
   $('h2, h3, h4').each((i, elem) => {
     const $heading = $(elem);
     const heading = $heading.text().trim();
     const sectionType = elem.name; // h2, h3, h4
-    
+
     // Get content until next heading
     let content = '';
     let codeExample = '';
-    
+
     $heading.nextUntil('h2, h3, h4').each((j, nextElem) => {
       const $elem = $(nextElem);
-      
+
       if ($elem.is('pre, code')) {
         codeExample += $elem.text() + '\n\n';
       } else {
         content += $elem.text().trim() + '\n';
       }
     });
-    
+
     sections.push({
       sectionType,
       heading,
@@ -256,15 +256,27 @@ function parsePage(html, url) {
       position: sectionIndex++
     });
   });
-  
-  // Extract all code blocks
+
+  // Extract all code blocks from main content only (exclude navigation, header, footer)
   const codeBlocks = [];
-  $('pre code, pre, code.code-block').each((i, elem) => {
-    const code = $(elem).text().trim();
+
+  // Try to find main content container
+  const $mainContent = $('main, [role="main"], #main-content, .main-content, article').first();
+  const $codeContext = $mainContent.length > 0 ? $mainContent : $('body');
+
+  $codeContext.find('pre code, pre, code.code-block').each((i, elem) => {
+    const $elem = $(elem);
+
+    // Skip if inside navigation, header, footer, or sidebar
+    if ($elem.closest('nav, header, footer, aside, [role="navigation"]').length > 0) {
+      return;
+    }
+
+    const code = $elem.text().trim();
     if (code.length > 10) { // Ignore very short snippets
-      const language = $(elem).attr('class')?.match(/language-(\w+)/)?.[1] || 
-                       (code.includes('<!DOCTYPE') || code.includes('<html') ? 'html' : 'unknown');
-      
+      const language = $elem.attr('class')?.match(/language-(\w+)/)?.[1] ||
+        (code.includes('<!DOCTYPE') || code.includes('<html') ? 'html' : 'unknown');
+
       codeBlocks.push({
         code,
         language,
@@ -272,7 +284,7 @@ function parsePage(html, url) {
       });
     }
   });
-  
+
   return {
     title,
     category,
@@ -288,7 +300,7 @@ function savePage(url, html, parsedData) {
     INSERT OR REPLACE INTO pages (url, title, raw_html, category, component_name, updated_at)
     VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
   `);
-  
+
   const result = insertPage.run(
     url,
     parsedData.title,
@@ -296,15 +308,15 @@ function savePage(url, html, parsedData) {
     parsedData.category,
     parsedData.componentName
   );
-  
+
   const pageId = result.lastInsertRowid;
-  
+
   // Save sections
   const insertSection = db.prepare(`
     INSERT INTO content_sections (page_id, section_type, heading, content, code_example, position)
     VALUES (?, ?, ?, ?, ?, ?)
   `);
-  
+
   for (const section of parsedData.sections) {
     insertSection.run(
       pageId,
@@ -315,13 +327,13 @@ function savePage(url, html, parsedData) {
       section.position
     );
   }
-  
+
   // Save code examples
   const insertCode = db.prepare(`
     INSERT INTO code_examples (page_id, example_type, language, code, position)
     VALUES (?, ?, ?, ?, ?)
   `);
-  
+
   for (const codeBlock of parsedData.codeBlocks) {
     insertCode.run(
       pageId,
@@ -331,7 +343,7 @@ function savePage(url, html, parsedData) {
       codeBlock.position
     );
   }
-  
+
   return pageId;
 }
 
@@ -379,30 +391,30 @@ async function crawlPage(url) {
     log(`⏭️  Skipping already crawled: ${url}`);
     return [];
   }
-  
+
   try {
     log(`🔍 Crawling: ${url}`);
-    
+
     const response = await fetchUrl(url);
-    
+
     if (response.statusCode !== 200) {
       throw new Error(`HTTP ${response.statusCode}`);
     }
-    
+
     // Parse and save
     const parsedData = parsePage(response.body, url);
     savePage(url, response.body, parsedData);
-    
+
     // Extract links for further crawling
     const links = extractLinks(response.body, url);
-    
+
     // Mark as completed
     markUrlCrawled(url, 'completed');
-    
+
     log(`✅ Completed: ${url} (found ${links.length} links, ${parsedData.codeBlocks.length} code examples)`);
-    
+
     return links;
-    
+
   } catch (error) {
     log(`❌ Error crawling ${url}: ${error.message}`);
     markUrlCrawled(url, 'error', error.message);
@@ -416,35 +428,35 @@ async function crawl() {
   await log(`Base URL: ${BASE_URL}`);
   await log(`Database: ${DB_PATH}`);
   await log(`Delay: ${DELAY_MS}ms between requests`);
-  
+
   initDatabase();
-  
+
   // Start with base URL
   queueUrl(BASE_URL);
-  
+
   let totalCrawled = 0;
   let totalErrors = 0;
-  
+
   while (true) {
     const pendingUrls = getPendingUrls(10); // Process in batches
-    
+
     if (pendingUrls.length === 0) {
       break; // No more URLs to crawl
     }
-    
+
     for (const url of pendingUrls) {
       const newLinks = await crawlPage(url);
       totalCrawled++;
-      
+
       // Queue new links
       for (const link of newLinks) {
         queueUrl(link);
       }
-      
+
       // Delay between requests
       await new Promise(resolve => setTimeout(resolve, DELAY_MS));
     }
-    
+
     // Progress update
     const pending = getPendingUrls(1).length > 0;
     const stats = db.prepare(`
@@ -455,10 +467,10 @@ async function crawl() {
         SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending
       FROM crawl_urls
     `).get();
-    
+
     await log(`📊 Progress: ${stats.completed} completed, ${stats.errors} errors, ${stats.pending} pending`);
   }
-  
+
   // Final statistics
   const finalStats = db.prepare(`
     SELECT 
@@ -468,14 +480,14 @@ async function crawl() {
       (SELECT COUNT(*) FROM code_examples) as total_code_examples
     FROM crawl_urls
   `).get();
-  
+
   await log('=== Crawl Completed ===');
   await log(`Total URLs processed: ${finalStats.total_urls}`);
   await log(`Pages saved: ${finalStats.total_pages}`);
   await log(`Content sections: ${finalStats.total_sections}`);
   await log(`Code examples: ${finalStats.total_code_examples}`);
   await log(`Database size: ${(await fs.stat(DB_PATH)).size / 1024 / 1024} MB`);
-  
+
   db.close();
 }
 

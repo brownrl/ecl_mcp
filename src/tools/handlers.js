@@ -63,21 +63,47 @@ export async function handleToolCall(name, args, eclData) {
         if (name === 'ecl_get_component') {
             const { component, include = ['details'] } = args;
             const results = {};
+            let componentId = component;
+            let detailsData = null;
+
+            // Always fetch details first if requested, or if we need to resolve the ID
+            // If details is NOT requested but others are, we might want to resolve ID first anyway to ensure consistency
+            // But for now, let's assume if details is requested, we use its ID.
 
             if (include.includes('details')) {
-                results.details = Search.getComponentDetails(db, component);
+                const detailsResult = Search.getComponentDetails(db, component);
+                results.details = detailsResult;
+
+                if (detailsResult.success && detailsResult.data) {
+                    componentId = detailsResult.data.id;
+                    detailsData = detailsResult.data;
+                }
+            } else {
+                // If details not requested, try to resolve ID quickly to ensure consistency across other calls
+                // We can use getComponentDetails internally just for ID resolution if needed, 
+                // or just let them rely on the string (but that risks inconsistency as seen).
+                // Let's do a quick lookup if it's a string
+                if (typeof component === 'string') {
+                    const resolved = Search.getComponentDetails(db, component);
+                    if (resolved.success && resolved.data) {
+                        componentId = resolved.data.id;
+                    }
+                }
             }
+
             if (include.includes('api')) {
-                results.api = Search.getComponentAPI(db, component);
+                results.api = Search.getComponentAPI(db, componentId);
             }
             if (include.includes('examples')) {
-                results.examples = Search.getComponentExamples(db, component);
+                results.examples = Search.getComponentExamples(db, componentId);
             }
             if (include.includes('guidance')) {
-                results.guidance = Search.getComponentGuidance(db, component);
+                results.guidance = Search.getComponentGuidance(db, componentId);
             }
             if (include.includes('nesting')) {
-                results.nesting = Utils.getComponentNestingRules(component);
+                // Nesting rules might still need the name if they are static map based
+                // But let's pass the original component name/ID as fallback
+                results.nesting = Utils.getComponentNestingRules(detailsData ? detailsData.component_name : component);
             }
 
             return { content: [{ type: 'text', text: JSON.stringify(results, null, 2) }] };

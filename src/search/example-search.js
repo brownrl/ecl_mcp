@@ -111,7 +111,7 @@ export function searchExamples(db, params = {}) {
       is_complete: Boolean(row.complete_example),
       requires_data: Boolean(row.requires_data),
       is_interactive: Boolean(row.interactive),
-      code_preview: row.code.substring(0, 200) + (row.code.length > 200 ? '...' : ''),
+      code: row.code,  // Return full code instead of preview
       code_length: row.code.length
     }));
 
@@ -232,7 +232,7 @@ export function getComponentExamples(db, componentIdentifier) {
         WHERE cm.component_name LIKE ? OR p.title LIKE ?
         LIMIT 1
       `).get(`%${componentIdentifier}%`, `%${componentIdentifier}%`);
-      
+
       if (!page) {
         return {
           success: false,
@@ -275,7 +275,7 @@ export function getComponentExamples(db, componentIdentifier) {
         complexity: ex.complexity,
         is_complete: Boolean(ex.complete_example),
         is_interactive: Boolean(ex.interactive),
-        code_preview: ex.code.substring(0, 150) + '...',
+        code: ex.code,  // Return full code instead of preview
         code_length: ex.code.length
       });
       return acc;
