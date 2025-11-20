@@ -67,14 +67,22 @@ function getComponentTemplate(db, component) {
     // Get simplest example as template
     // NOTE: p.component_name is actually the CATEGORY, p.title is the actual component name
     
-    // Try multiple name variations to match singular/plural forms
-    const componentStr = String(component).toLowerCase();
+    // Try multiple name variations to match singular/plural forms and utilities
+    const componentStr = String(component).toLowerCase().trim();
     const componentVariations = [
       componentStr,
-      componentStr + 's',              // Add 's' for plural
-      componentStr.replace(/s$/, ''),  // Remove trailing 's' if present
+      componentStr + 's',                     // Add 's' for plural
+      componentStr.replace(/s$/, ''),         // Remove trailing 's' if present
+      componentStr.replace(/\s+/g, ''),       // Remove spaces (for utilities like "disable scroll" → "disablescroll")
+      componentStr.replace(/\s+/g, '-'),      // Replace spaces with hyphens (for "screen reader" → "screen-reader")
+      componentStr.replace(/\([^)]*\)/g, '').trim(), // Remove parentheses (for "Stacks (Flex)" → "Stacks")
     ];
 
+    // Build WHERE clause with both exact matches and LIKE patterns
+    const exactMatches = componentVariations.map(() => 'LOWER(p.title) = ?').join(' OR ');
+    const exactMatchesComponent = componentVariations.map(() => 'LOWER(p.component_name) = ?').join(' OR ');
+    const likePatterns = componentVariations.map(() => 'LOWER(p.title) LIKE ?').join(' OR ');
+    
     const query = `
       SELECT 
         ce.code,
@@ -84,8 +92,9 @@ function getComponentTemplate(db, component) {
       JOIN pages p ON ce.page_id = p.id
       LEFT JOIN enhanced_code_examples ece ON ce.id = ece.example_id
       WHERE (
-        LOWER(p.title) IN (${componentVariations.map(() => '?').join(', ')})
-        OR LOWER(p.component_name) IN (${componentVariations.map(() => '?').join(', ')})
+        ${exactMatches}
+        OR ${exactMatchesComponent}
+        OR ${likePatterns}
       )
         AND ce.language = 'html'
       ORDER BY 
@@ -98,8 +107,9 @@ function getComponentTemplate(db, component) {
     `;
 
     const params = [
-      ...componentVariations,
-      ...componentVariations
+      ...componentVariations,                              // Exact title matches
+      ...componentVariations,                              // Exact component_name matches  
+      ...componentVariations.map(v => `%${v}%`)           // LIKE patterns for title
     ];
     
     const template = db.prepare(query).get(...params);
