@@ -67,16 +67,19 @@ function extractTitle(html) {
 // Strip HTML tags and decode entities to get plain text
 function stripHtml(html) {
   return html
-    .replace(/<script[^>]*>.*?<\/script>/gi, '') // Remove scripts
-    .replace(/<style[^>]*>.*?<\/style>/gi, '')   // Remove styles
-    .replace(/<[^>]+>/g, ' ')                     // Remove all tags
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '') // Remove scripts
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')   // Remove styles
+    .replace(/<nav[^>]*>[\s\S]*?<\/nav>/gi, '')       // Remove navigation
+    .replace(/<header[^>]*>[\s\S]*?<\/header>/gi, '') // Remove headers
+    .replace(/<footer[^>]*>[\s\S]*?<\/footer>/gi, '') // Remove footers
+    .replace(/<[^>]+>/g, ' ')                          // Remove all tags
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
     .replace(/&amp;/g, '&')
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
     .replace(/&nbsp;/g, ' ')
-    .replace(/\s+/g, ' ')                         // Normalize whitespace
+    .replace(/\s+/g, ' ')                              // Normalize whitespace
     .trim();
 }
 
@@ -194,11 +197,19 @@ async function crawl() {
       const existing = await dbGet('SELECT id, html, title FROM pages WHERE url = ?', [page.url]);
 
       if (existing) {
-        // Update metadata and rebuild examples from stored HTML
-        console.log(`🔄 Rebuilding examples: ${existing.title}`);
+        // Update metadata, rebuild content, and rebuild examples from stored HTML
+        console.log(`🔄 Rebuilding: ${existing.title}`);
+        const content = stripHtml(existing.html);
+        
         await dbRun(
-          'UPDATE pages SET category = ?, hierarchy_1 = ?, hierarchy_2 = ?, hierarchy_3 = ?, hierarchy_4 = ? WHERE id = ?',
-          [page.category, h1, h2, h3, h4, existing.id]
+          'UPDATE pages SET category = ?, hierarchy_1 = ?, hierarchy_2 = ?, hierarchy_3 = ?, hierarchy_4 = ?, content = ? WHERE id = ?',
+          [page.category, h1, h2, h3, h4, content, existing.id]
+        );
+        
+        // Update FTS with lowercased content
+        await dbRun(
+          'UPDATE pages_fts SET content = LOWER(?) WHERE rowid = ?',
+          [content, existing.id]
         );
         
         // Extract and save code examples from stored HTML
