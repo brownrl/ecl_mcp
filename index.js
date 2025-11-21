@@ -99,6 +99,15 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           required: [],
         },
       },
+      {
+        name: 'index',
+        description: 'Get the complete list of all pages in the ECL documentation database. Returns URL, title, category, and hierarchy information for all 159 pages.',
+        inputSchema: {
+          type: 'object',
+          properties: {},
+          required: [],
+        },
+      },
     ],
   };
 });
@@ -128,6 +137,7 @@ This MCP server provides access to the European Commission's Component Library d
 3. **get_page** - Get the complete HTML content of a specific page by URL
 4. **get_examples** - Get just the code examples from a page (faster than parsing full HTML)
 5. **get_starter_template** - Get a ready-to-use HTML starter template with ECL CDN setup
+6. **index** - Get the complete list of all pages with URL, title, category, and hierarchy
 
 ## Quick Start for Creating ECL Pages:
 
@@ -381,6 +391,65 @@ Icons and logos from same CDN:
     };
   }
 
+  if (name === 'index') {
+    try {
+      const results = await dbAll(
+        `SELECT 
+          url,
+          title,
+          category,
+          hierarchy_1,
+          hierarchy_2,
+          hierarchy_3,
+          hierarchy_4
+         FROM pages
+         ORDER BY category, hierarchy_1, hierarchy_2, hierarchy_3, hierarchy_4`
+      );
+
+      // Build JSON structure
+      const pages = results.map(page => {
+        const path = [
+          page.hierarchy_1,
+          page.hierarchy_2,
+          page.hierarchy_3,
+          page.hierarchy_4,
+        ].filter(h => h);
+
+        return {
+          title: page.title,
+          url: page.url,
+          category: page.category,
+          path: path,
+          type: path[path.length - 1] || null, // Last element in path (e.g., "api", "code", "usage")
+        };
+      });
+
+      const indexData = {
+        total: results.length,
+        pages: pages,
+      };
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(indexData, null, 2),
+          },
+        ],
+      };
+    } catch (error) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `Error retrieving index: ${error.message}`,
+          },
+        ],
+        isError: true,
+      };
+    }
+  }
+
   if (name === 'search') {
     const query = args.query.toLowerCase(); // Lowercase since FTS content is lowercased
     const limit = args.limit || 10;
@@ -417,7 +486,7 @@ Icons and logos from same CDN:
         };
       }
 
-      // Format results
+      // Format results with more readable snippets
       let output = `# Search Results for "${query}"\n\nFound ${results.length} result(s):\n\n`;
       
       results.forEach((result, index) => {
