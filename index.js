@@ -8,9 +8,11 @@ const {
 } = require('@modelcontextprotocol/sdk/types.js');
 const sqlite3 = require('sqlite3');
 const { promisify } = require('util');
+const path = require('path');
 
-// Open database
-const db = new sqlite3.Database('./ecl-database.sqlite');
+// Open database - use absolute path relative to this script
+const dbPath = path.join(__dirname, 'ecl-database.sqlite');
+const db = new sqlite3.Database(dbPath);
 const dbAll = promisify(db.all.bind(db));
 
 // Create MCP server
