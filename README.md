@@ -14,7 +14,7 @@ A Model Context Protocol (MCP) server that provides AI agents with access to the
 Install directly from GitHub:
 
 ```bash
-npm install github:brownrl/ecl_mcp
+npm install github:brownrl/eco_mcp
 ```
 
 ## Usage
@@ -27,7 +27,7 @@ Add to your MCP client configuration (e.g., Claude Desktop):
     "ecl": {
       "command": "node",
       "args": [
-        "/path/to/your/project/node_modules/ecl_mcp/index.js"
+        "/path/to/your/project/node_modules/eco_mcp/index.js"
       ]
     }
   }
@@ -43,7 +43,7 @@ Or use npx to run directly from GitHub without installation:
       "command": "npx",
       "args": [
         "-y",
-        "github:brownrl/ecl_mcp"
+        "github:brownrl/eco_mcp"
       ]
     }
   }
