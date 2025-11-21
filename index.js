@@ -160,6 +160,28 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           required: ['query'],
         },
       },
+      {
+        name: 'get_example',
+        description: 'Get a specific code example from a page by URL and label or index. Use this after search_examples to retrieve a targeted example without fetching the entire page.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            url: {
+              type: 'string',
+              description: 'The page URL (from search results)',
+            },
+            label: {
+              type: 'string',
+              description: 'The example label to match (e.g., "Primary button"). Case-insensitive partial matching supported.',
+            },
+            index: {
+              type: 'number',
+              description: 'The example index (0-based). Use when label is not unique or unknown.',
+            },
+          },
+          required: ['url'],
+        },
+      },
     ],
   };
 });
@@ -302,30 +324,37 @@ Natural language search across all 270+ code examples.
 - Returns: Matching code snippets with source page info
 - **Best for:** Finding specific HTML patterns quickly
 
-### 5. **search** ⭐ PRIMARY TOOL FOR COMPONENTS
+### 5. **get_example** ⭐ GET SPECIFIC EXAMPLE
+Get a single example by URL and label or index.
+- Example: \`get_example(url="...", label="Primary button")\`
+- Example: \`get_example(url="...", index=0)\`
+- Returns: Single targeted code example
+- **Best for:** Retrieving exact example after search_examples
+
+### 6. **search** ⭐ PRIMARY TOOL FOR COMPONENTS
 Search 159 pages by keyword. Returns matching pages with snippets.
 - Example: \`search(query="button primary")\`
 - Example: \`search(query="form validation")\`
 - Example: \`search(query="responsive grid")\`
 
-### 6. **get_examples** ⭐ MOST USEFUL FOR CODE
+### 7. **get_examples** ⭐ MOST USEFUL FOR CODE
 Extract clean, copy-paste ready HTML from any component page.
 - Requires URL from search results
 - Returns labeled code blocks
 - Much faster than get_page
 
-### 7. **get_starter_template** ⭐ START HERE FOR NEW PROJECTS
+### 8. **get_starter_template** ⭐ START HERE FOR NEW PROJECTS
 Generate complete HTML boilerplate with:
 - Official EC CDN links (v4.11.1)
 - Required CSS (reset, main, utilities, print)
 - ECL JavaScript with auto-initialization
 - Proper meta tags and structure
 
-### 8. **get_page**
+### 9. **get_page**
 Retrieve full HTML documentation page (verbose, rarely needed).
 Use \`get_examples\` instead for code.
 
-### 9. **index**
+### 10. **index**
 Get complete list of all 159 pages with URLs, categories, and hierarchy.
 Useful for building navigation or seeing everything at once.
 
@@ -446,12 +475,14 @@ Static components (Button, Card, Banner, etc.) require no JavaScript.
 |------|------|---------|
 | Starting new project | \`get_starter_template\` | Get HTML boilerplate |
 | Finding components | \`search\` | "button primary" |
-| Getting component code | \`get_examples\` | Use URL from search |
+| Finding code examples | \`search_examples\` | "primary button" |
+| Getting one example | \`get_example\` | url + label or index |
+| Getting all examples | \`get_examples\` | Use URL from search |
 | Seeing all available docs | \`index\` | Browse full catalog |
 | Deep documentation dive | \`get_page\` | Full page context |
 | Checking what's available | \`about\` | You're here! |
 
-**Recommended flow:** \`about\` → \`get_starter_template\` → \`search\` → \`get_examples\` → implement
+**Recommended flow:** \`about\` → \`get_starter_template\` → \`search_examples\` → \`get_example\` → implement
 
 ---
 
@@ -980,7 +1011,7 @@ Icons and logos from same CDN:
         output += `\`\`\`html\n${result.code}\n\`\`\`\n\n`;
       });
 
-      output += `\n---\n💡 **Tip:** Use 'get_examples' with the page URL to see all examples from that page.\n`;
+      output += `\n---\n💡 **Tip:** Use 'get_example' with the page URL and label to retrieve a specific example, or 'get_examples' to see all examples from that page.\n`;
 
       return {
         content: [
@@ -996,6 +1027,150 @@ Icons and logos from same CDN:
           {
             type: 'text',
             text: `Error searching examples: ${error.message}`,
+          },
+        ],
+        isError: true,
+      };
+    }
+  }
+
+  if (name === 'get_example') {
+    const url = args.url;
+    const label = args.label;
+    const index = args.index;
+
+    // Need either label or index
+    if (label === undefined && index === undefined) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: 'Error: Must provide either "label" or "index" parameter.\n\nExamples:\n- get_example(url="...", label="Primary button")\n- get_example(url="...", index=0)',
+          },
+        ],
+        isError: true,
+      };
+    }
+
+    try {
+      // Get page
+      const pageResult = await dbAll(
+        'SELECT id, title, category FROM pages WHERE url = ? LIMIT 1',
+        [url]
+      );
+
+      if (pageResult.length === 0) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Page not found: "${url}"\n\nUse the search tool first to find available pages.`,
+            },
+          ],
+        };
+      }
+
+      const page = pageResult[0];
+
+      // Get examples from this page
+      const examples = await dbAll(
+        'SELECT code, label, position FROM examples WHERE page_id = ? ORDER BY position',
+        [page.id]
+      );
+
+      if (examples.length === 0) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `No code examples found for: ${page.title}\n\nThis page may not contain code examples.`,
+            },
+          ],
+        };
+      }
+
+      let matchedExample = null;
+      let matchedIndex = -1;
+
+      // Match by index if provided
+      if (index !== undefined) {
+        if (index < 0 || index >= examples.length) {
+          return {
+            content: [
+              {
+                type: 'text',
+                text: `Index out of range: ${index}\n\nThis page has ${examples.length} example(s) (indices 0-${examples.length - 1}).`,
+              },
+            ],
+            isError: true,
+          };
+        }
+        matchedExample = examples[index];
+        matchedIndex = index;
+      }
+      // Match by label if provided
+      else if (label !== undefined) {
+        const lowerLabel = label.toLowerCase();
+        
+        // Try exact match first
+        for (let i = 0; i < examples.length; i++) {
+          if (examples[i].label && examples[i].label.toLowerCase() === lowerLabel) {
+            matchedExample = examples[i];
+            matchedIndex = i;
+            break;
+          }
+        }
+
+        // Try partial match if no exact match
+        if (!matchedExample) {
+          for (let i = 0; i < examples.length; i++) {
+            if (examples[i].label && examples[i].label.toLowerCase().includes(lowerLabel)) {
+              matchedExample = examples[i];
+              matchedIndex = i;
+              break;
+            }
+          }
+        }
+
+        // No match found
+        if (!matchedExample) {
+          let availableLabels = examples
+            .map((ex, idx) => `  ${idx}. ${ex.label || '(no label)'}`)
+            .join('\n');
+          
+          return {
+            content: [
+              {
+                type: 'text',
+                text: `Label not found: "${label}"\n\nAvailable examples on this page:\n${availableLabels}\n\nTry using the index parameter instead.`,
+              },
+            ],
+            isError: true,
+          };
+        }
+      }
+
+      let output = `# Example: ${matchedExample.label || 'Untitled'}\n\n`;
+      output += `**From:** ${page.title}\n`;
+      output += `**URL:** ${url}\n`;
+      output += `**Category:** ${page.category}\n`;
+      output += `**Example Index:** ${matchedIndex} of ${examples.length}\n\n`;
+      output += `\`\`\`html\n${matchedExample.code}\n\`\`\`\n`;
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: output,
+          },
+        ],
+      };
+    } catch (error) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `Error retrieving example: ${error.message}`,
           },
         ],
         isError: true,
