@@ -60,7 +60,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         },
       },
       {
-        name: 'get_documentationpage',
+        name: 'get_documentation_page',
         description: 'Get the complete HTML content of a specific documentation page by URL. Use this after searching to retrieve full code examples and detailed documentation.',
         inputSchema: {
           type: 'object',
