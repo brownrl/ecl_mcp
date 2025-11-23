@@ -115,21 +115,12 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         },
       },
       {
-        name: 'search_recipes',
-        description: 'Search ECL recipes - pre-built component combinations and patterns. Returns step-by-step guides for common tasks like "complete webpage", "login form", "dashboard layout". More comprehensive than individual component docs.',
+        name: 'list_recipes',
+        description: 'List all ECL recipes - pre-built component combinations and patterns. Returns all recipes sorted by ID with metadata. More comprehensive than individual component docs.',
         inputSchema: {
           type: 'object',
-          properties: {
-            query: {
-              type: 'string',
-              description: 'Search query to find relevant recipes (e.g., "full page", "form", "layout")',
-            },
-            limit: {
-              type: 'number',
-              description: 'Maximum number of results to return (default: 5)',
-            },
-          },
-          required: ['query'],
+          properties: {},
+          required: [],
         },
       },
       {
@@ -282,9 +273,9 @@ Copy HTML into template's \`<main>\` section. Components auto-initialize.
 
 **Start here:** \`get_starter_template\` - Complete HTML boilerplate
 
-**Find components:** \`search_examples\`, \`get_example\`, \`search\`, \`get_examples\`
+**Find components:** \`search_examples\`, \`get_example\`, \`search_documentation_pages\`
 
-**Advanced:** \`recipe_search\`, \`recipe_get\`, \`get_documentation_page\`, \`index\`
+**Advanced:** \`list_recipes\`, \`recipe_get\`, \`get_documentation_page\`, \`get_documentation_pages_list\`, \`get_documentation_page_examples\`
 
 ---
 
@@ -873,7 +864,7 @@ Icons and logos from same CDN:
       // 3. Fall back to AND for multi-word
       const words = query.split(/\s+/);
       let ftsQueries = [];
-      
+
       if (words.length > 1) {
         // Try as exact phrase
         ftsQueries.push(`\"${query}\"`);
@@ -886,7 +877,7 @@ Icons and logos from same CDN:
       } else {
         ftsQueries.push(query);
       }
-      
+
       // Try each query in order until we get results
       let results = [];
       for (const ftsQuery of ftsQueries) {
@@ -909,7 +900,7 @@ Icons and logos from same CDN:
              LIMIT ?`,
             [ftsQuery, limit]
           );
-          
+
           if (results.length > 0) {
             break; // Found results, stop trying
           }
@@ -953,11 +944,11 @@ Icons and logos from same CDN:
           // The last non-null hierarchy field is the page type (usage/code/api)
           let sisterPages = [];
           const sisterTypes = ['usage', 'code', 'api'];
-          
+
           // Determine which hierarchy level contains the page type
           let pageType = null;
           let hierarchyLevel = null;
-          
+
           if (result.hierarchy_4 && sisterTypes.includes(result.hierarchy_4)) {
             pageType = result.hierarchy_4;
             hierarchyLevel = 4;
@@ -968,12 +959,12 @@ Icons and logos from same CDN:
             pageType = result.hierarchy_2;
             hierarchyLevel = 2;
           }
-          
+
           if (pageType && hierarchyLevel) {
             // Build condition to match siblings
             const conditions = [];
             const params = [];
-            
+
             // Match all hierarchy levels before the page type
             if (hierarchyLevel >= 2 && result.hierarchy_1) {
               conditions.push('hierarchy_1 = ?');
@@ -987,7 +978,7 @@ Icons and logos from same CDN:
               conditions.push('hierarchy_3 = ?');
               params.push(result.hierarchy_3);
             }
-            
+
             // Ensure levels after page type are null
             if (hierarchyLevel === 2) {
               conditions.push('hierarchy_3 IS NULL');
@@ -995,15 +986,15 @@ Icons and logos from same CDN:
             } else if (hierarchyLevel === 3) {
               conditions.push('hierarchy_4 IS NULL');
             }
-            
+
             const whereClause = conditions.join(' AND ');
             const hierarchyField = `hierarchy_${hierarchyLevel}`;
-            
+
             const sisters = await dbAll(
               `SELECT url, title, ${hierarchyField} as page_type FROM pages WHERE ${whereClause} AND ${hierarchyField} != ?`,
               [...params, pageType]
             );
-            
+
             sisterPages = sisters.map(s => ({
               type: s.page_type,
               url: s.url,
@@ -1021,7 +1012,7 @@ Icons and logos from same CDN:
             has_examples: exampleCount[0].count > 0,
             example_count: exampleCount[0].count,
             related_pages: sisterPages.length > 0 ? sisterPages : undefined,
-            get_examples_call: exampleCount[0].count > 0 
+            get_examples_call: exampleCount[0].count > 0
               ? `get_documentation_page_examples(url="${result.url}")`
               : null,
             get_page_call: `get_documentation_page(url="${result.url}")`
@@ -1056,57 +1047,40 @@ Icons and logos from same CDN:
     }
   }
 
-  if (name === 'search_recipes') {
-    const query = args.query.toLowerCase();
-    const limit = args.limit || 5;
-
+  if (name === 'list_recipes') {
     try {
-      let results = await dbAll(
+      const results = await dbAll(
         `SELECT 
-          r.id,
-          r.title,
-          r.description,
-          r.difficulty,
-          r.components_used,
-          r.created_at,
-          snippet(recipes_fts, 0, '<mark>', '</mark>', '...', 50) as snippet
-         FROM recipes_fts
-         JOIN recipes r ON recipes_fts.rowid = r.id
-         WHERE recipes_fts MATCH ?
-         ORDER BY rank
-         LIMIT ?`,
-        [query, limit]
+          id,
+          title,
+          description,
+          difficulty,
+          components_used,
+          keywords,
+          created_at
+         FROM recipes
+         ORDER BY id ASC`
       );
 
-      if (results.length === 0) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `No recipes found for: "${query}"\n\nTry broader terms like "webpage", "form", "layout", or "page".`,
-            },
-          ],
-        };
-      }
-
-      let output = `# Recipe Search Results for "${query}"\n\nFound ${results.length} recipe(s):\n\n`;
-
-      results.forEach((result, index) => {
-        output += `## ${index + 1}. ${result.title}\n`;
-        output += `**Difficulty:** ${result.difficulty || 'Not specified'}\n`;
-        output += `**Description:** ${result.description}\n`;
-        output += `**Components Used:** ${result.components_used}\n`;
-        output += `**Recipe ID:** ${result.id}\n`;
-        output += `**Match:** ${result.snippet}\n\n`;
-      });
-
-      output += `\n---\n💡 **Tip:** Use 'recipe_get' with the Recipe ID to retrieve the full recipe with step-by-step instructions.\n`;
+      const output = {
+        total: results.length,
+        recipes: results.map(recipe => ({
+          id: recipe.id,
+          title: recipe.title,
+          description: recipe.description,
+          difficulty: recipe.difficulty,
+          components_used: recipe.components_used,
+          keywords: recipe.keywords,
+          created_at: recipe.created_at,
+          get_recipe_call: `get_recipe(id=${recipe.id})`
+        }))
+      };
 
       return {
         content: [
           {
             type: 'text',
-            text: output,
+            text: JSON.stringify(output, null, 2),
           },
         ],
       };
@@ -1115,7 +1089,7 @@ Icons and logos from same CDN:
         content: [
           {
             type: 'text',
-            text: `Error searching recipes: ${error.message}`,
+            text: `Error listing recipes: ${error.message}`,
           },
         ],
         isError: true,
