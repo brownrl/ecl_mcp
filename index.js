@@ -911,6 +911,11 @@ Icons and logos from same CDN:
       }
 
       if (results.length === 0) {
+        const words = query.split(/\s+/);
+        const suggestion = words.length > 1 
+          ? `Try searching with just one word (e.g., "${words[0]}" instead of "${query}")`
+          : null;
+
         return {
           content: [
             {
@@ -918,7 +923,8 @@ Icons and logos from same CDN:
               text: JSON.stringify({
                 query: query,
                 total: 0,
-                results: []
+                results: [],
+                suggestion: suggestion
               }, null, 2),
             },
           ],
@@ -1185,6 +1191,11 @@ Icons and logos from same CDN:
       );
 
       if (results.length === 0) {
+        const words = query.split(/\s+/);
+        const suggestion = words.length > 1 
+          ? `Try searching with just one word (e.g., "${words[0]}" instead of "${query}")`
+          : null;
+
         return {
           content: [
             {
@@ -1192,7 +1203,8 @@ Icons and logos from same CDN:
               text: JSON.stringify({
                 query: query,
                 total: 0,
-                results: []
+                results: [],
+                suggestion: suggestion
               }, null, 2),
             },
           ],
