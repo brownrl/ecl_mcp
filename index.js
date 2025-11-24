@@ -157,24 +157,16 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: 'get_example',
-        description: 'Get a specific code example from a page by URL and label or index. Use this after search_examples to retrieve a targeted example without fetching the entire page.',
+        description: 'Get a specific code example by its ID. Use this after search_examples to retrieve the full code for a specific example.',
         inputSchema: {
           type: 'object',
           properties: {
-            url: {
-              type: 'string',
-              description: 'The page URL (from search results)',
-            },
-            label: {
-              type: 'string',
-              description: 'The example label to match (e.g., "Primary button"). Case-insensitive partial matching supported.',
-            },
-            index: {
+            id: {
               type: 'number',
-              description: 'The example index (0-based). Use when label is not unique or unknown.',
+              description: 'The example ID from search_examples results',
             },
           },
-          required: ['url'],
+          required: ['id'],
         },
       },
     ],
@@ -1221,14 +1213,14 @@ Icons and logos from same CDN:
       const output = {
         query: query,
         total: results.length,
-        results: results.map((result, index) => ({
-          index: index + 1,
+        results: results.map((result) => ({
+          id: result.id,
           label: result.label || 'Untitled Example',
           page_title: result.page_title,
           category: result.category,
           url: result.url,
           snippet: result.snippet,
-          code: result.code,
+          get_example_call: `get_example(id=${result.id})`,
         }))
       };
 
@@ -1254,17 +1246,14 @@ Icons and logos from same CDN:
   }
 
   if (name === 'get_example') {
-    const url = args.url;
-    const label = args.label;
-    const index = args.index;
+    const id = args.id;
 
-    // Need either label or index
-    if (label === undefined && index === undefined) {
+    if (!id) {
       return {
         content: [
           {
             type: 'text',
-            text: 'Error: Must provide either "label" or "index" parameter.\n\nExamples:\n- get_example(url="...", label="Primary button")\n- get_example(url="...", index=0)',
+            text: 'Error: Must provide "id" parameter.\n\nExample: get_example(id=123)\n\nUse search_examples() first to find example IDs.',
           },
         ],
         isError: true,
@@ -1272,109 +1261,42 @@ Icons and logos from same CDN:
     }
 
     try {
-      // Get page
-      const pageResult = await dbAll(
-        'SELECT id, title, category FROM pages WHERE url = ? LIMIT 1',
-        [url]
+      // Get example with page info
+      const result = await dbAll(
+        `SELECT 
+          e.id,
+          e.code,
+          e.label,
+          e.position,
+          p.title as page_title,
+          p.url as page_url,
+          p.category
+         FROM examples e
+         JOIN pages p ON e.page_id = p.id
+         WHERE e.id = ?
+         LIMIT 1`,
+        [id]
       );
 
-      if (pageResult.length === 0) {
+      if (result.length === 0) {
         return {
           content: [
             {
               type: 'text',
-              text: `Page not found: "${url}"\n\nUse the search tool first to find available pages.`,
+              text: `Example not found: ID ${id}\n\nUse search_examples() to find available examples.`,
             },
           ],
         };
       }
 
-      const page = pageResult[0];
-
-      // Get examples from this page
-      const examples = await dbAll(
-        'SELECT code, label, position FROM examples WHERE page_id = ? ORDER BY position',
-        [page.id]
-      );
-
-      if (examples.length === 0) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `No code examples found for: ${page.title}\n\nThis page may not contain code examples.`,
-            },
-          ],
-        };
-      }
-
-      let matchedExample = null;
-      let matchedIndex = -1;
-
-      // Match by index if provided
-      if (index !== undefined) {
-        if (index < 0 || index >= examples.length) {
-          return {
-            content: [
-              {
-                type: 'text',
-                text: `Index out of range: ${index}\n\nThis page has ${examples.length} example(s) (indices 0-${examples.length - 1}).`,
-              },
-            ],
-            isError: true,
-          };
-        }
-        matchedExample = examples[index];
-        matchedIndex = index;
-      }
-      // Match by label if provided
-      else if (label !== undefined) {
-        const lowerLabel = label.toLowerCase();
-
-        // Try exact match first
-        for (let i = 0; i < examples.length; i++) {
-          if (examples[i].label && examples[i].label.toLowerCase() === lowerLabel) {
-            matchedExample = examples[i];
-            matchedIndex = i;
-            break;
-          }
-        }
-
-        // Try partial match if no exact match
-        if (!matchedExample) {
-          for (let i = 0; i < examples.length; i++) {
-            if (examples[i].label && examples[i].label.toLowerCase().includes(lowerLabel)) {
-              matchedExample = examples[i];
-              matchedIndex = i;
-              break;
-            }
-          }
-        }
-
-        // No match found
-        if (!matchedExample) {
-          let availableLabels = examples
-            .map((ex, idx) => `  ${idx}. ${ex.label || '(no label)'}`)
-            .join('\n');
-
-          return {
-            content: [
-              {
-                type: 'text',
-                text: `Label not found: "${label}"\n\nAvailable examples on this page:\n${availableLabels}\n\nTry using the index parameter instead.`,
-              },
-            ],
-            isError: true,
-          };
-        }
-      }
-
-      let output = `# Example: ${matchedExample.label || 'Untitled'}\n\n`;
-      output += `**From:** ${page.title}\n`;
-      output += `**URL:** ${url}\n`;
-      output += `**Category:** ${page.category}\n`;
-      output += `**Example Index:** ${matchedIndex} of ${examples.length}\n\n`;
-      output += `\`\`\`html\n${matchedExample.code}\n\`\`\`\n`;
+      const example = result[0];
+      let output = `# Example: ${example.label || 'Untitled'}\n\n`;
+      output += `**Example ID:** ${example.id}\n`;
+      output += `**From:** ${example.page_title}\n`;
+      output += `**URL:** ${example.page_url}\n`;
+      output += `**Category:** ${example.category}\n\n`;
+      output += `## Code\n\n`;
+      output += `\`\`\`html\n${example.code}\n\`\`\`\n`;
 
       return {
         content: [
