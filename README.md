@@ -17,12 +17,6 @@ Install from GitHub:
 npm install github:brownrl/eco_mcp
 ```
 
-Or install the published package:
-
-```bash
-npm install eco_mcp
-```
-
 ## Configuration
 
 ### Charm Crush
@@ -71,6 +65,7 @@ Add to your Claude Desktop configuration:
   "mcpServers": {
     "ecl": {
       "command": "npx",
+      "type": "stdio",
       "args": [
         "ecl-mcp"
       ]
@@ -81,215 +76,83 @@ Add to your Claude Desktop configuration:
 
 ## Available Tools
 
-### Core Tools
-
-#### `about`
-Get comprehensive information about the ECL MCP server, component catalog, and AI agent workflow guide.
+### `start_here`
+**CALL THIS FIRST!** Essential setup guide with asset download script and quick start instructions. Returns complete workflow for building ECL pages. ALL other tools assume you have to read this first.
 
 **Parameters:** None
 
-**Returns:**
-- Overview of 159 documentation pages
-- Complete component catalog (70+ UI, 24 form, 21 navigation components)
-- Quick start workflow for AI agents
-- Common search queries and usage patterns
-
 ---
 
-### Documentation Search Tools
-
-#### `search`
-Search across all 159 ECL documentation pages using full-text search.
+### `search_documentation_pages`
+Search the EC Europa Component Library documentation. Returns matching pages with their titles, URLs, categories, and hierarchy information.
 
 **Parameters:**
 - `query` (string, required): Search query to find relevant documentation pages
-- `limit` (number, optional): Maximum results to return (default: 10)
+- `limit` (number, optional): Maximum number of results to return (default: 10)
 
-**Returns:**
-- Page title, URL, category
-- Hierarchical path (e.g., components > button > code)
-- Content snippet with highlighted search terms
-- Ranked by relevance
+---
 
-**Examples:**
-```javascript
-search(query: "button primary")
-search(query: "form validation", limit: 5)
-search(query: "site header")
-```
+### `get_documentation_page`
+Get the complete HTML content of a specific documentation page by URL. Use this after searching to retrieve full code examples and detailed documentation.
 
-#### `index`
-Get the complete list of all 159 pages in the ECL documentation database.
+**Parameters:**
+- `url` (string, required): The full URL of the page to retrieve (from search results)
+- `content` (boolean, optional): If true (default), returns cleaned page content. If false, returns raw HTML.
+
+---
+
+### `get_documentation_page_examples`
+Get code examples from a specific documentation page by URL. Returns only the code blocks with their labels, making it faster than parsing full HTML.
+
+**Parameters:**
+- `url` (string, required): The full URL of the page to retrieve examples from (from search results)
+
+---
+
+### `get_starter_template`
+Get a basic HTML starter template with proper ECL local assets setup, ready to use. Use this as the foundation before adding ECL components. Returns a complete HTML page with correct script tags, CSS links, and local asset URLs.
+
+**Parameters:**
+- `title` (string, optional): Page title (optional, defaults to "ECL Page")
+
+---
+
+### `get_documentation_pages_list`
+Get the complete list of all pages in the ECL documentation database. Returns URL, title, category, and hierarchy information for all 159 pages.
 
 **Parameters:** None
 
-**Returns:**
-- JSON array of all pages with URLs, titles, categories, and hierarchy paths
-- Sorted by category and hierarchy
+---
 
-**Use for:** Browsing full catalog, building navigation, seeing everything at once
+### `list_recipes`
+List all ECL recipes - pre-built component combinations and patterns. Returns all recipes sorted by ID with metadata. More comprehensive than individual component docs.
+
+**Parameters:** None
 
 ---
 
-### Code Examples Tools
-
-#### `search_examples`
-Search across all 270+ code examples using natural language queries. **Best for finding specific HTML patterns quickly.**
+### `get_recipe`
+Get the complete recipe by ID. Returns full markdown content with step-by-step instructions, code examples, and best practices. Use this after recipe_search to get implementation details.
 
 **Parameters:**
-- `query` (string, required): Search query for code examples (e.g., "button primary", "checkbox required")
-- `limit` (number, optional): Maximum results (default: 10)
-
-**Returns:**
-- Matching code snippets with full HTML
-- Source page title, URL, and category
-- Example labels
-- Highlighted match snippets
-
-**Examples:**
-```javascript
-search_examples(query: "primary button")
-search_examples(query: "form validation")
-search_examples(query: "sortable table")
-```
-
-#### `get_examples`
-Retrieve all code examples from a specific documentation page. **Faster than `get_page` for code.**
-
-**Parameters:**
-- `url` (string, required): Full URL of the page (from search results)
-
-**Returns:**
-- All code examples from the page
-- Example labels and positions
-- Clean, copy-paste ready HTML
-
-**Example:**
-```javascript
-get_examples(url: "https://ec.europa.eu/component-library/ec/components/button/code/")
-```
-
-#### `get_example`
-Get a single specific code example by URL and label or index.
-
-**Parameters:**
-- `url` (string, required): Page URL (from search results)
-- `label` (string, optional): Example label to match (case-insensitive, partial matching)
-- `index` (number, optional): Example index (0-based)
-
-**Note:** Must provide either `label` or `index`
-
-**Returns:**
-- Single targeted code example
-- Page context and example metadata
-
-**Examples:**
-```javascript
-get_example(url: "...", label: "Primary button")
-get_example(url: "...", index: 0)
-```
+- `id` (number, required): Recipe ID from recipe_search results
 
 ---
 
-### Recipe Tools (Pre-built Patterns)
-
-#### `recipe_search`
-Search curated recipes for common implementation patterns. **Best for complete workflows and end-to-end guides.**
+### `search_examples`
+Search all code examples using natural language queries. Returns matching examples with their code, labels, and source page URLs. Useful for finding specific HTML patterns, component implementations, or usage examples.
 
 **Parameters:**
-- `query` (string, required): Search query (e.g., "complete webpage", "form", "dashboard")
-- `limit` (number, optional): Maximum results (default: 5)
-
-**Returns:**
-- Recipe ID, title, description
-- Difficulty level
-- Components used
-- Match snippets
-
-**Examples:**
-```javascript
-recipe_search(query: "complete webpage")
-recipe_search(query: "form layout")
-recipe_search(query: "dashboard")
-```
-
-#### `recipe_get`
-Retrieve the complete recipe with full step-by-step instructions.
-
-**Parameters:**
-- `id` (number, required): Recipe ID from `recipe_search` results
-
-**Returns:**
-- Full markdown content with detailed instructions
-- Code examples and best practices
-- Common pitfalls and solutions
-- Production deployment checklists
-
-**Example:**
-```javascript
-recipe_get(id: 1)
-```
+- `query` (string, required): Search query to find relevant code examples (e.g., "button primary", "checkbox required", "form validation")
+- `limit` (number, optional): Maximum number of results to return (default: 10)
 
 ---
 
-### Utility Tools
-
-#### `get_starter_template`
-Generate a complete HTML boilerplate with proper ECL CDN setup. **Start here for new projects.**
+### `get_example`
+Get a specific code example by its ID. Use this after search_examples to retrieve the full code for a specific example.
 
 **Parameters:**
-- `title` (string, optional): Page title (default: "ECL Page")
-
-**Returns:**
-- Complete HTML template with:
-  - Official EC CDN links (v4.11.1)
-  - Required CSS (reset, main, utilities, print)
-  - ECL JavaScript with auto-initialization
-  - Proper meta tags and structure
-
-**Example:**
-```javascript
-get_starter_template(title: "My ECL Application")
-```
-
-#### `get_page`
-Get the complete HTML documentation page content. **Use `get_examples` for code instead - it's faster.**
-
-**Parameters:**
-- `url` (string, required): Full URL of the page
-- `content` (boolean, optional): If true (default), returns cleaned content; if false, returns raw HTML
-
-**Returns:**
-- Page title, URL, category
-- Complete page content (verbose)
-
-**Example:**
-```javascript
-get_page(url: "https://ec.europa.eu/component-library/ec/components/button/usage/")
-get_page(url: "...", content: false)  // Get raw HTML
-```
-
-## Recommended Workflows
-
-### For New Projects
-1. `get_starter_template(title: "My Page")` - Get HTML boilerplate
-2. `search_examples(query: "site header")` - Find header code
-3. `get_example(url: "...", index: 0)` - Get specific example
-4. Insert code and repeat for other components
-
-### For Finding Specific Components
-1. `search(query: "button primary")` - Find relevant pages
-2. `get_examples(url: "...")` - Get all button examples
-3. Copy desired HTML
-
-### For Complete Implementation Guides
-1. `recipe_search(query: "complete webpage")` - Find relevant recipes
-2. `recipe_get(id: 1)` - Get full step-by-step guide
-3. Follow instructions with code examples
-
-### For Quick Code Snippets
-1. `search_examples(query: "primary button")` - Direct code search
-2. Copy HTML from results
+- `id` (number, required): The example ID from search_examples results
 
 ---
 
@@ -314,20 +177,6 @@ The server uses a SQLite database (`ecl-database.sqlite`, ~21MB) containing:
 - Difficulty levels and component lists
 - FTS5 indexed for search
 
-## Updating Documentation
-
-To re-crawl the documentation:
-
-```bash
-node crawl.js
-```
-
-This will:
-- Fetch any new URLs from `pages-to-crawl.txt`
-- Update metadata for existing pages (without re-fetching HTML)
-- Extract and store hierarchical path information
-- Extract code examples and store them separately for fast retrieval
-
 ## Technical Details
 
 **MCP Protocol:** Model Context Protocol v1.0  
@@ -338,4 +187,4 @@ This will:
 
 ## License
 
-ISC
+None, I'm just sharing this as-is for educational purposes. please clone and use as you see fit!
