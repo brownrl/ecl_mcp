@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<!-- ECL (Europa Component Library) Template File
+   ================================================
+   This is a comprehensive template for creating ECL-styled web pages.
+   It includes all major components: site header, menu, page header, content area, and footer.
+
+   ECL Version: v4.11.1 (EC theme)
+   Dependencies: Local ECL assets in assets/ directory (CSS, JS, icons)
+
+   For AI Coding Agents:
+   - Replace placeholder content with actual data
+   - Modify menu items, breadcrumbs, and links as needed
+   - Update meta tags, titles, and descriptions
+   - Ensure all asset paths are correct for your setup
+   - Test on different screen sizes for responsive design
+   - Validate HTML and accessibility
+
+   Key ECL Components Used:
+   - Site Header: Logo, language selector, search, banner, menu
+   - Page Header: Breadcrumb navigation and description
+   - Site Footer: Logo, description, social media, columnar links
+   - Auto-initialization: ECL components activate automatically via ECL.autoInit()
+
+   Customization Tips:
+   - Use ECL utility classes (ecl-u-*) for spacing and layout
+   - CRITICAL: Apply ecl-u-type-* classes to ALL basic HTML elements (p, h1-h6, ul, ol, li) for proper typography
+   - Icons are SVG sprites referenced via xlink:href
+   - Dark backgrounds require -negative icon variants
+   - Links on dark backgrounds use ecl-link--inverted
+-->
+<html lang="en" class="no-js">
+<!-- Language attribute should match content language -->
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <!-- Viewport meta tag ensures proper mobile rendering -->
+    <title>ECL Template - Replace with Your Page Title</title>
+    <!-- Update title for SEO and browser tab -->
+
+    <!-- ECL JavaScript Enhancement: Adds 'has-js' class for progressive enhancement -->
+    <script>
+        document.documentElement.classList.remove('no-js');
+        document.documentElement.classList.add('has-js');
+    </script>
+
+    <!-- ECL CSS Files - Load in this order -->
+    <link rel="stylesheet" href="assets/css/ecl-reset.css" />
+    <!-- Base reset styles -->
+    <link rel="stylesheet" href="assets/css/ecl-ec.css" />
+    <!-- Main ECL styles for EC theme -->
+    <link rel="stylesheet" href="assets/css/ecl-ec-utilities.css" />
+    <!-- Utility classes for layout and spacing -->
+    <link rel="stylesheet" href="assets/css/ecl-ec-print.css" media="print" />
+    <!-- Print-specific styles -->
+</head>
+
+<body>
+    <!-- ==========================================
+         SITE HEADER SECTION
+         ==========================================
+         The site header contains the main navigation, logo, language selector, and search.
+         ECL classes: ecl-site-header with variants for logo size and menu presence.
+         Auto-initializes with data-ecl-auto-init="SiteHeader"
+    -->
+    <header class="ecl-site-header ecl-site-header-with-logo-l ecl-site-header--has-menu"
+        data-ecl-auto-init="SiteHeader">
+        <div class="ecl-site-header__inner">
+            <div class="ecl-site-header__background">
+                <div class="ecl-site-header__header">
+                    <div class="ecl-site-header__container ecl-container">
+                        <!-- Top bar with logo and action items -->
+                        <div class="ecl-site-header__top" data-ecl-site-header-top>
+                            <!-- Site Logo - Replace src with your logo path -->
+                            <a href="/" class="ecl-link ecl-link--standalone ecl-site-header__logo-link">
+                                <img class="ecl-site-header__logo-image ecl-site-header__logo-image--l"
+                                    src="assets/icons/logo-ec.svg" alt="European Commission" />
+                                <!-- Alt text should describe the logo for accessibility -->
+                            </a>
+                            <!-- Action items: language selector and search -->
+                            <div class="ecl-site-header__action">
+                                <!-- Language Selector - Dropdown with language options -->
+                                <div class="ecl-site-header__language">
+                                    <a class="ecl-button ecl-button--tertiary ecl-site-header__language-selector"
+                                        href="#" data-ecl-language-selector role="button"
+                                        aria-label="Change language, current language is English - EN"
+                                        aria-controls="language-list-overlay">
+                                        <span class="ecl-site-header__language-icon">
+                                            <svg class="ecl-icon ecl-icon--s ecl-site-header__icon" focusable="false"
+                                                aria-hidden="false" role="img">
+                                                <title>EN</title>
+                                                <!-- Icon from SVG sprite - use xlink:href for local files -->
+                                                <use xlink:href="assets/icons/icons.svg#global"></use>
+                                            </svg>
+                                        </span>
+                                        EN
+                                        <!-- Current language code -->
+                                    </a>
+                                    <!-- Language selection overlay - hidden by default -->
+                                    <div class="ecl-site-header__language-container" id="language-list-overlay" hidden
+                                        data-ecl-language-list-overlay aria-labelledby="ecl-site-header__language-title"
+                                        role="dialog">
+                                        <div class="ecl-site-header__language-header">
+                                            <div class="ecl-site-header__language-title"
+                                                id="ecl-site-header__language-title">Select your language</div>
+                                            <!-- Close button for overlay -->
+                                            <button
+                                                class="ecl-button ecl-button--tertiary ecl-site-header__language-close ecl-button--icon-only"
+                                                type="submit" data-ecl-language-list-close>
+                                                <span class="ecl-button__container">
+                                                    <span class="ecl-button__label" data-ecl-label="true">Close</span>
+                                                    <svg class="ecl-icon ecl-icon--m ecl-button__icon" focusable="false"
+                                                        aria-hidden="true" data-ecl-icon>
+                                                        <use xlink:href="assets/icons/icons.svg#close"></use>
+                                                    </svg>
+                                                </span>
+                                            </button>
+                                        </div>
+                                        <!-- Language options list -->
+                                        <div class="ecl-site-header__language-content" data-ecl-language-list-content>
+                                            <div class="ecl-site-header__language-category" data-ecl-language-list-eu>
+                                                <div class="ecl-site-header__language-category-title">Official EU
+                                                    languages:</div>
+                                                <ul class="ecl-site-header__language-list">
+                                                    <!-- Active language item -->
+                                                    <li class="ecl-site-header__language-item">
+                                                        <a href="#"
+                                                            class="ecl-link ecl-link--standalone ecl-link--no-visited ecl-site-header__language-link ecl-site-header__language-link--active"
+                                                            hreflang="en">
+                                                            <span class="ecl-site-header__language-link-code">en</span>
+                                                            <span class="ecl-site-header__language-link-label"
+                                                                lang="en">English</span>
+                                                        </a>
+                                                    </li>
+                                                    <!-- Additional language options - modify as needed -->
+                                                    <li class="ecl-site-header__language-item">
+                                                        <a href="#"
+                                                            class="ecl-link ecl-link--standalone ecl-link--no-visited ecl-site-header__language-link"
+                                                            hreflang="fr">
+                                                            <span class="ecl-site-header__language-link-code">fr</span>
+                                                            <span class="ecl-site-header__language-link-label"
+                                                                lang="fr">français</span>
+                                                        </a>
+                                                    </li>
+                                                    <li class="ecl-site-header__language-item">
+                                                        <a href="#"
+                                                            class="ecl-link ecl-link--standalone ecl-link--no-visited ecl-site-header__language-link"
+                                                            hreflang="de">
+                                                            <span class="ecl-site-header__language-link-code">de</span>
+                                                            <span class="ecl-site-header__language-link-label"
+                                                                lang="de">Deutsch</span>
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Search functionality -->
+                                <div class="ecl-site-header__search-container" role="search">
+                                    <!-- Search toggle button -->
+                                    <a class="ecl-button ecl-button--tertiary ecl-site-header__search-toggle" href="#"
+                                        data-ecl-search-toggle="true" aria-controls="search-form-id"
+                                        aria-expanded="false">
+                                        <svg class="ecl-icon ecl-icon--s ecl-site-header__icon" focusable="false"
+                                            aria-hidden="false" role="img">
+                                            <title>Search</title>
+                                            <use xlink:href="assets/icons/icons.svg#search"></use>
+                                        </svg>
+                                        Search
+                                    </a>
+                                    <!-- Search form - expands when toggle is clicked -->
+                                    <form class="ecl-search-form ecl-site-header__search" role="search"
+                                        data-ecl-search-form id="search-form-id">
+                                        <div class="ecl-form-group">
+                                            <label for="search-input-id" id="search-input-id-label"
+                                                class="ecl-form-label ecl-search-form__label">Search</label>
+                                            <input id="search-input-id"
+                                                class="ecl-text-input ecl-text-input--m ecl-search-form__text-input"
+                                                type="search" placeholder="Search..." />
+                                        </div>
+                                        <!-- Submit button with icon -->
+                                        <button class="ecl-button ecl-button--ghost ecl-search-form__button"
+                                            type="submit">
+                                            <span class="ecl-button__container">
+                                                <svg class="ecl-icon ecl-icon--xs ecl-button__icon" focusable="false"
+                                                    aria-hidden="true" data-ecl-icon>
+                                                    <use xlink:href="assets/icons/icons.svg#search"></use>
+                                                </svg>
+                                                <span class="ecl-button__label" data-ecl-label="true">Search</span>
+                                            </span>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Site name banner - appears below the header -->
+        <div class="ecl-site-header__banner">
+            <div class="ecl-container">
+                <div class="ecl-site-header__site-name">ECL Template - Replace with Your Site Name</div>
+                <!-- Update site name for branding -->
+            </div>
+        </div>
+        <!-- Main navigation menu -->
+        <nav class="ecl-menu" data-ecl-menu data-ecl-menu-max-lines="2" data-ecl-auto-init="Menu"
+            data-ecl-menu-label-open="Menu" data-ecl-menu-label-close="Close" aria-expanded="false" role="navigation"
+            aria-label="Main navigation">
+            <div class="ecl-menu__overlay"></div>
+            <!-- Menu overlay for mobile -->
+            <div class="ecl-container ecl-menu__container">
+                <!-- Menu toggle button for mobile -->
+                <button class="ecl-button ecl-button--tertiary ecl-menu__open ecl-button--icon-only" type="button"
+                    data-ecl-menu-open aria-expanded="false">
+                    <span class="ecl-button__container">
+                        <svg class="ecl-icon ecl-icon--m ecl-button__icon" focusable="false" aria-hidden="true"
+                            data-ecl-icon>
+                            <use xlink:href="assets/icons/icons.svg#hamburger"></use>
+                        </svg>
+                        <svg class="ecl-icon ecl-icon--m ecl-button__icon" focusable="false" aria-hidden="true"
+                            data-ecl-icon>
+                            <use xlink:href="assets/icons/icons.svg#close"></use>
+                        </svg>
+                        <span class="ecl-button__label" data-ecl-label="true">Menu</span>
+                    </span>
+                </button>
+                <!-- Menu content area -->
+                <section class="ecl-menu__inner" data-ecl-menu-inner aria-label="Menu">
+                    <header class="ecl-menu__inner-header">
+                        <!-- Close button for menu -->
+                        <button class="ecl-button ecl-button--ghost ecl-menu__close ecl-button--icon-only" type="submit"
+                            data-ecl-menu-close>
+                            <span class="ecl-button__container">
+                                <span class="ecl-button__label" data-ecl-label="true">Close</span>
+                                <svg class="ecl-icon ecl-icon--m ecl-button__icon" focusable="false" aria-hidden="true"
+                                    data-ecl-icon>
+                                    <use xlink:href="assets/icons/icons.svg#close"></use>
+                                </svg>
+                            </span>
+                        </button>
+                        <div class="ecl-menu__title">Menu</div>
+                    </header>
+                    <!-- Menu items list - modify links and text as needed -->
+                    <ul class="ecl-menu__list" data-ecl-menu-list>
+                        <li class="ecl-menu__item" data-ecl-menu-item>
+                            <a href="/" class="ecl-link ecl-link--standalone ecl-menu__link" data-ecl-menu-link>Home</a>
+                        </li>
+                        <li class="ecl-menu__item" data-ecl-menu-item>
+                            <a href="/about" class="ecl-link ecl-link--standalone ecl-menu__link"
+                                data-ecl-menu-link>About</a>
+                        </li>
+                        <li class="ecl-menu__item" data-ecl-menu-item>
+                            <a href="/contact" class="ecl-link ecl-link--standalone ecl-menu__link"
+                                data-ecl-menu-link>Contact</a>
+                        </li>
+                        <!-- Add more menu items here -->
+                </section>
+            </div>
+        </nav>
+    </header>
+
+    <!-- ==========================================
+         MAIN CONTENT SECTION
+         ==========================================
+         Contains the page header with breadcrumbs and description, plus main content area.
+         Use semantic HTML5 elements and ECL utility classes for layout.
+    -->
+    <main id="main-content" class="ecl-u-type-m">
+        <!-- Page Header with breadcrumb navigation and description -->
+        <div class="ecl-page-header">
+            <div class="ecl-container">
+                <!-- Breadcrumb navigation - auto-initializes with data-ecl-auto-init="Breadcrumb" -->
+                <nav class="ecl-breadcrumb ecl-page-header__breadcrumb" aria-label="You are here:"
+                    data-ecl-breadcrumb="true" data-ecl-auto-init="Breadcrumb">
+                    <ol class="ecl-breadcrumb__container">
+                        <!-- Home breadcrumb segment -->
+                        <li class="ecl-breadcrumb__segment" data-ecl-breadcrumb-item="static">
+                            <a href="/"
+                                class="ecl-link ecl-link--standalone ecl-link--no-visited ecl-breadcrumb__link">Home</a>
+                            <svg class="ecl-icon ecl-icon--fluid ecl-breadcrumb__icon" focusable="false"
+                                aria-hidden="true" role="presentation">
+                                <use xlink:href="assets/icons/icons.svg#corner-arrow"></use>
+                            </svg>
+                        </li>
+                        <!-- Current page breadcrumb - update text for your page -->
+                        <li class="ecl-breadcrumb__segment ecl-breadcrumb__current-page"
+                            data-ecl-breadcrumb-item="static" aria-current="page">
+                            ECL Template - Replace with Your Page Title
+                        </li>
+                    </ol>
+                </nav>
+                <!-- Optional page header info section - can be used for metadata -->
+                <div class="ecl-page-header__info">
+                    <!-- Add page metadata, publication dates, etc. here if needed -->
+                </div>
+                <!-- Page description - replace with your page summary -->
+                <div class="ecl-page-header__description-container">
+                    <p class="ecl-page-header__description">
+                        This is a comprehensive ECL template demonstrating all major components.
+                        Replace this description with a summary of your page content for better SEO and user experience.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main content container - replace with your actual content -->
+        <div class="ecl-container">
+            <!-- Content goes here - use ECL components and utilities as needed -->
+            <!-- IMPORTANT: Always apply ECL utility classes to basic HTML elements for proper typography and spacing -->
+            <h1 class="ecl-u-type-heading-1">ECL Template Main Content</h1>
+            <!-- ecl-u-type-heading-1: Applies ECL heading styles (font-size, weight, line-height, margins) to h1 -->
+            <p class="ecl-u-type-paragraph">This template includes all major ECL components: site header with logo,
+                menu, language selector, and
+                search; page header with breadcrumbs and description; main content area; and footer with logo, social
+                media, and columnar links.</p>
+            <!-- ecl-u-type-paragraph: Applies ECL paragraph styles (line-height, margins, font-size) -->
+
+            <h2 class="ecl-u-type-heading-2">Getting Started</h2>
+            <!-- ecl-u-type-heading-2: Applies ECL heading styles to h2 -->
+            <p class="ecl-u-type-paragraph">To use this template:</p>
+            <ol class="ecl-u-type-list">
+                <!-- ecl-u-type-list: Applies ECL list styles (margins, padding) to ordered lists -->
+                <li class="ecl-u-type-item">Replace placeholder content with your actual content</li>
+                <li class="ecl-u-type-item">Update the site name, logo, and navigation links</li>
+                <li class="ecl-u-type-item">Modify breadcrumbs and page titles for each page</li>
+                <li class="ecl-u-type-item">Ensure all asset paths are correct for your setup</li>
+                <li class="ecl-u-type-item">Test responsiveness on different screen sizes</li>
+                <!-- ecl-u-type-item: Applies ECL list item styles (margins, line-height) -->
+            </ol>
+
+            <h2 class="ecl-u-type-heading-2">ECL Components Used</h2>
+            <ul class="ecl-u-type-list">
+                <!-- ecl-u-type-list: Applies ECL list styles to unordered lists -->
+                <li class="ecl-u-type-item"><strong>Site Header:</strong> Logo, language selector, search form, banner,
+                    menu</li>
+                <li class="ecl-u-type-item"><strong>Page Header:</strong> Breadcrumb navigation, page description</li>
+                <li class="ecl-u-type-item"><strong>Site Footer:</strong> Logo, description, social media links,
+                    columnar link sections</li>
+                <li class="ecl-u-type-item"><strong>Icons:</strong> SVG sprites with xlink:href references</li>
+                <li class="ecl-u-type-item"><strong>Auto-initialization:</strong> ECL components activate automatically
+                    via ECL.autoInit()</li>
+            </ul>
+
+            <!-- Add more content sections as needed -->
+        </div>
+    </main>
+
+    <!-- ==========================================
+         SITE FOOTER SECTION
+         ==========================================
+         Contains site logo, description, social media links, and columnar link sections.
+         Uses ecl-site-footer--split-columns for two-column layout.
+         Links on dark backgrounds use ecl-link--inverted class.
+         Social media icons use -negative variants for visibility on dark footer.
+    -->
+    <footer class="ecl-site-footer ecl-site-footer--split-columns">
+        <div class="ecl-container ecl-site-footer__container">
+            <div class="ecl-site-footer__row">
+                <!-- Left column: Logo, description, social media -->
+                <div class="ecl-site-footer__column">
+                    <div class="ecl-site-footer__section">
+                        <!-- Footer logo - uses negative variant for dark background -->
+                        <a href="/" class="ecl-link ecl-link--standalone ecl-site-footer__logo-link">
+                            <img class="ecl-site-footer__logo-image" src="assets/icons/logo-ec-negative.svg"
+                                alt="European Commission" />
+                        </a>
+                        <!-- Site description - update with your site info -->
+                        <div class="ecl-site-footer__description">
+                            This site is managed by: [Your Organization Name]
+                        </div>
+                        <!-- Social media section -->
+                        <div class="ecl-site-footer__section">
+                            <div class="ecl-site-footer__title">Follow us on</div>
+                            <!-- Inline social media list - uses ecl-site-footer__list--inline -->
+                            <ul class="ecl-site-footer__list ecl-site-footer__list--inline">
+                                <!-- Facebook link with negative icon -->
+                                <li class="ecl-site-footer__list-item">
+                                    <a href="https://www.facebook.com/[YourFacebookPage]"
+                                        class="ecl-link ecl-link--standalone ecl-link--inverted ecl-link--icon ecl-site-footer__link">
+                                        <svg class="ecl-icon ecl-icon--xs ecl-link__icon" focusable="false"
+                                            aria-hidden="true">
+                                            <use xlink:href="assets/icons/icons-social-media.svg#facebook-negative">
+                                            </use>
+                                        </svg>
+                                        <span class="ecl-link__label">Facebook</span>
+                                    </a>
+                                </li>
+                                <!-- Twitter link with negative icon -->
+                                <li class="ecl-site-footer__list-item">
+                                    <a href="https://twitter.com/[YourTwitterHandle]"
+                                        class="ecl-link ecl-link--standalone ecl-link--inverted ecl-link--icon ecl-site-footer__link">
+                                        <svg class="ecl-icon ecl-icon--xs ecl-link__icon" focusable="false"
+                                            aria-hidden="true">
+                                            <use xlink:href="assets/icons/icons-social-media.svg#twitter-negative">
+                                            </use>
+                                        </svg>
+                                        <span class="ecl-link__label">Twitter</span>
+                                    </a>
+                                </li>
+                                <!-- LinkedIn link with negative icon -->
+                                <li class="ecl-site-footer__list-item">
+                                    <a href="https://www.linkedin.com/company/[YourLinkedInPage]"
+                                        class="ecl-link ecl-link--standalone ecl-link--inverted ecl-link--icon ecl-site-footer__link">
+                                        <svg class="ecl-icon ecl-icon--xs ecl-link__icon" focusable="false"
+                                            aria-hidden="true">
+                                            <use xlink:href="assets/icons/icons-social-media.svg#linkedin-negative">
+                                            </use>
+                                        </svg>
+                                        <span class="ecl-link__label">LinkedIn</span>
+                                    </a>
+                                </li>
+                                <!-- Instagram link with negative icon -->
+                                <li class="ecl-site-footer__list-item">
+                                    <a href="https://www.instagram.com/[YourInstagramHandle]/"
+                                        class="ecl-link ecl-link--standalone ecl-link--inverted ecl-link--icon ecl-site-footer__link">
+                                        <svg class="ecl-icon ecl-icon--xs ecl-link__icon" focusable="false"
+                                            aria-hidden="true">
+                                            <use xlink:href="assets/icons/icons-social-media.svg#instagram-negative">
+                                            </use>
+                                        </svg>
+                                        <span class="ecl-link__label">Instagram</span>
+                                    </a>
+                                </li>
+                                <!-- Add more social media links as needed -->
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <!-- Right column: Link sections -->
+                <div class="ecl-site-footer__column">
+                    <!-- Main links section with columns -->
+                    <div class="ecl-site-footer__section ecl-site-footer__section--separator">
+                        <ul class="ecl-site-footer__list ecl-site-footer__list--columns">
+                            <!-- Modify these links to match your site's navigation -->
+                            <li class="ecl-site-footer__list-item">
+                                <a href="/strategy"
+                                    class="ecl-link ecl-link--standalone ecl-link--inverted ecl-site-footer__link">Strategy</a>
+                            </li>
+                            <li class="ecl-site-footer__list-item">
+                                <a href="/about"
+                                    class="ecl-link ecl-link--standalone ecl-link--inverted ecl-site-footer__link">About
+                                    Our Organization</a>
+                            </li>
+                            <li class="ecl-site-footer__list-item">
+                                <a href="/business"
+                                    class="ecl-link ecl-link--standalone ecl-link--inverted ecl-site-footer__link">Business
+                                    & Economy</a>
+                            </li>
+                            <li class="ecl-site-footer__list-item">
+                                <a href="/services"
+                                    class="ecl-link ecl-link--standalone ecl-link--inverted ecl-site-footer__link">Services</a>
+                            </li>
+                            <li class="ecl-site-footer__list-item">
+                                <a href="/law"
+                                    class="ecl-link ecl-link--standalone ecl-link--inverted ecl-site-footer__link">Legal
+                                    Information</a>
+                            </li>
+                            <li class="ecl-site-footer__list-item">
+                                <a href="/funding"
+                                    class="ecl-link ecl-link--standalone ecl-link--inverted ecl-site-footer__link">Funding
+                                    & Grants</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <!-- Contact and accessibility links -->
+                    <div class="ecl-site-footer__section">
+                        <ul class="ecl-site-footer__list">
+                            <li class="ecl-site-footer__list-item">
+                                <a href="/contact"
+                                    class="ecl-link ecl-link--standalone ecl-link--inverted ecl-site-footer__link">Contact
+                                    Us</a>
+                            </li>
+                            <li class="ecl-site-footer__list-item">
+                                <a href="/accessibility"
+                                    class="ecl-link ecl-link--standalone ecl-link--inverted ecl-site-footer__link">Accessibility</a>
+                            </li>
+                            <li class="ecl-site-footer__list-item">
+                                <a href="/social-media"
+                                    class="ecl-link ecl-link--standalone ecl-link--inverted ecl-site-footer__link">Follow
+                                    Us on Social Media</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <!-- Legal and policy links -->
+                    <div class="ecl-site-footer__section ecl-site-footer__section--split-list">
+                        <ul class="ecl-site-footer__list">
+                            <li class="ecl-site-footer__list-item">
+                                <a href="/languages"
+                                    class="ecl-link ecl-link--standalone ecl-link--inverted ecl-site-footer__link">Languages
+                                    on Our Websites</a>
+                            </li>
+                            <li class="ecl-site-footer__list-item">
+                                <a href="/cookies"
+                                    class="ecl-link ecl-link--standalone ecl-link--inverted ecl-site-footer__link">Cookies</a>
+                            </li>
+                            <li class="ecl-site-footer__list-item">
+                                <a href="/privacy"
+                                    class="ecl-link ecl-link--standalone ecl-link--inverted ecl-site-footer__link">Privacy
+                                    Policy</a>
+                            </li>
+                            <li class="ecl-site-footer__list-item">
+                                <a href="/legal"
+                                    class="ecl-link ecl-link--standalone ecl-link--inverted ecl-site-footer__link">Legal
+                                    Notice</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ==========================================
+         ECL JAVASCRIPT INITIALIZATION
+         ==========================================
+         ECL components auto-initialize when the DOM is ready.
+         ECL.autoInit() activates all components with data-ecl-auto-init attributes.
+         Add your custom JavaScript below the ECL initialization.
+    -->
+    <script src="assets/js/ecl-ec.js"></script>
+    <script>
+        // ECL Auto-initialization - Activates all ECL components
+        document.addEventListener('DOMContentLoaded', function () {
+            ECL.autoInit();
+            // Add your custom JavaScript here
+            // Examples:
+            // - Form validation
+            // - Custom event handlers
+            // - Analytics tracking
+            // - Dynamic content loading
+        });
+    </script>
+</body>
+
+</html>
