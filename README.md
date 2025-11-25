@@ -14,7 +14,7 @@ A Model Context Protocol (MCP) server that provides AI agents with access to the
 Install from GitHub:
 
 ```bash
-npm install github:brownrl/eco_mcp
+npm install github:brownrl/ecl_mcp
 ```
 
 ## Configuration
